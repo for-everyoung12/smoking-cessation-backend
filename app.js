@@ -47,6 +47,9 @@ require('./models/progressTracking.model');
 const authRoutes = require('./routes/auth.routes');
 app.use('/api', authRoutes);
 
+const badgeRoutes = require('./routes/badge.routes');
+app.use('/api/badges', badgeRoutes);
+
 
 // Test route
 app.get('/', (req, res) => {
