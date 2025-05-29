@@ -3,6 +3,8 @@ const express = require('express');
 const cors = require('cors');
 const dotenv = require('dotenv');
 const mongoose = require('mongoose');
+const swaggerUI = require('swagger-ui-express');
+const swaggerSpec = require('./config/swagger');
 
 dotenv.config();
 
@@ -22,8 +24,15 @@ mongoose.connect(process.env.MONGO_URI, {
   console.error('MongoDB connection error:', err);
 });
 
+
+app.use('/api-docs', swaggerUI.serve, swaggerUI.setup(swaggerSpec));
 // Load models
-require('./models/user.model');
+const authRoutes = require('./routes/auth.routes');
+app.use('/api/auth', authRoutes);
+const userRoutes = require('./routes/user.routes');
+app.use('/api/users', userRoutes);
+
+
 require('./models/membershipPackage.model');
 require('./models/payment.model');
 require('./models/transaction.model');
@@ -44,8 +53,6 @@ require('./models/coachMessage.model');
 require('./models/progressTracking.model');
 
 
-const authRoutes = require('./routes/auth.routes');
-app.use('/api', authRoutes);
 
 
 // Test route

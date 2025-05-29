@@ -8,7 +8,11 @@ const userSchema = new mongoose.Schema({
   birth_date: Date,
   gender: String,
   role: { type: String, enum: ['member', 'coach', 'admin'] },
-  created_at: { type: Date, default: Date.now }
+  created_at: { type: Date, default: Date.now },
+  emailVerificationToken: String,
+  isEmailVerified: { type: Boolean, default: false },
+  resetPasswordToken: String,
+  resetPasswordExpire: Date
 });
 
 const User = mongoose.model('User', userSchema);
