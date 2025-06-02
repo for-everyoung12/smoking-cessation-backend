@@ -32,7 +32,22 @@ app.use('/api/auth', authRoutes);
 const userRoutes = require('./routes/user.routes');
 app.use('/api/users', userRoutes);
 
+const quitPlanRoutes = require('./routes/quitPlan.routes');
+app.use('/api/quit-plans', quitPlanRoutes);
 
+const quitPlanProgressRoutes = require('./routes/quitPlanProgress.routes');
+app.use('/api/quit-plans', quitPlanProgressRoutes);
+
+const quitStageRoutes = require('./routes/quitStage.routes');
+app.use('/api/quit-plans', quitStageRoutes);
+
+const smokingStatusRoutes = require('./routes/smokingStatus.routes');
+app.use('/api/quit-plans', smokingStatusRoutes);
+
+require('./models/user.model');
+require('./models/quitPlan.model');
+require('./models/progressTracking.model');
+require('./models/quitStage.model');
 require('./models/membershipPackage.model');
 require('./models/payment.model');
 require('./models/transaction.model');
@@ -41,8 +56,6 @@ require('./models/reminder.model');
 require('./models/blog.model');
 require('./models/notification.model');
 require('./models/smokingStatus.model');
-require('./models/quitPlan.model');
-require('./models/quitStage.model');
 require('./models/feedback.model');
 require('./models/badge.model');
 require('./models/userBadge.model');
@@ -51,7 +64,6 @@ require('./models/chatSession.model');
 require('./models/coachUser.model');
 require('./models/coachMessage.model');
 require('./models/progressTracking.model');
-
 
 
 

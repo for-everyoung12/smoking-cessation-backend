@@ -1,12 +1,14 @@
 const jwt = require('jsonwebtoken');
 const bcrypt = require('bcryptjs');
 const User = require('../models/user.model');
-const sendEmail = require('../utils/sendEmail');
+const sendEmail = require('../utils/sendmail');
 const crypto = require('crypto');
 const admin = require('../firebase/firebase-config');
-
+const MembershipPackage = require('../models/membershipPackage.model');
+const UserMembership = require('../models/userMembership.model');
 const JWT_SECRET = process.env.JWT_SECRET;
 const FRONTEND_URL = process.env.FRONTEND_URL;
+
 
 // Giao diện email HTML
 const generateVerificationEmail = (username, verificationUrl) => `
@@ -55,6 +57,21 @@ exports.register = async (req, res) => {
     });
 
     await user.save();
+
+
+    const defaultPackage = await MembershipPackage.findOne({ name: 'default' });
+    if (defaultPackage) {
+      await UserMembership.create({
+        user_id: user._id,
+        package_id: defaultPackage._id,
+        status: 'active',
+        payment_date: new Date(),
+        expire_date: null
+      });
+    } else {
+      console.warn('[REGISTER] Default membership package not found');
+    }
+
     const verificationUrl = `${FRONTEND_URL}/verify-email?token=${emailToken}`;
     await sendEmail(email, 'Verify your email', generateVerificationEmail(username || email, verificationUrl));
 
