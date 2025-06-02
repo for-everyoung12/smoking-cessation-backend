@@ -42,8 +42,8 @@ exports.createOrder = async (amount, currency = "USD") => {
         },
       ],
       application_context: {
-        return_url: `${process.env.FRONTEND_URL}/paypal-success`,
-        cancel_url: `${process.env.FRONTEND_URL}/paypal-cancel`,
+        return_url: "https://example.com/paypal-success",
+        cancel_url: "https://example.com/paypal-cancel",
       },
     },
     {

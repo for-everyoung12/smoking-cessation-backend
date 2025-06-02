@@ -5,7 +5,11 @@ const badgeSchema = new mongoose.Schema({
   type: String,
   date: Date,
   description: String,
-  condition: String
+  condition: String,
+  proOnly: {
+    type: Boolean,
+    default: false,
+  }
 });
 
 const Badge = mongoose.model('Badge', badgeSchema);

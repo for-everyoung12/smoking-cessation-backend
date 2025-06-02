@@ -7,7 +7,7 @@ const transactionService = require("../services/transaction.service");
 
 exports.createPaypalOrder = async (req, res) => {
   try {
-    const userId = req.user._id;
+    const userId = req.user._id || req.user.id; 
     const { package_id } = req.body;
 
     const pkg = await MembershipPackage.findById(package_id);
@@ -17,7 +17,8 @@ exports.createPaypalOrder = async (req, res) => {
     const order = await paypalService.createOrder(pkg.price);
     const transactionId = order.id;
 
-    // Tạo bản ghi Payment với trạng thái pending
+  if (!userId) return res.status(400).json({ message: 'User not authenticated' });
+
     await Payment.create({
       user_id: userId,
       package_id,
@@ -37,7 +38,7 @@ exports.createPaypalOrder = async (req, res) => {
 
 exports.capturePaypalOrder = async (req, res) => {
   try {
-    const userId = req.user._id;
+    const userId = req.user.id;
     const { orderId } = req.body;
 
     const captured = await paypalService.captureOrder(orderId);
