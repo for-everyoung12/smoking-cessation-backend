@@ -1,27 +1,28 @@
-const UserMembership = require('../models/userMembership.model');
+const UserMembership = require("../models/userMembership.model");
 
 const checkMembershipPermission = (permissionField) => {
   return async (req, res, next) => {
     try {
       const membership = await UserMembership.findOne({
         user_id: req.user.id,
-        status: 'active'
-      }).populate('package_id');
+        status: "active",
+        expire_date: { $gte: new Date() },
+      }).populate("package_id");
 
       if (!membership || !membership.package_id?.[permissionField]) {
         return res.status(403).json({
-          message: `Your membership does not allow this action (${permissionField})`
+          message: `Your membership does not allow this action (${permissionField})`,
         });
       }
 
       next();
     } catch (error) {
-      console.error('[Membership Check Error]', error);
-      res.status(500).json({ message: 'Permission check failed' });
+      console.error("[Membership Check Error]", error);
+      res.status(500).json({ message: "Permission check failed" });
     }
   };
 };
 
 module.exports = {
-  checkMembershipPermission
+  checkMembershipPermission,
 };
