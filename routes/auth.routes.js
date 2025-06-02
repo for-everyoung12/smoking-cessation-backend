@@ -13,8 +13,11 @@ const authController = require('../controllers/auth.controller');
  * @swagger
  * /api/auth/register:
  *   post:
- *     summary: Register new user
+ *     summary: Register new user (auto-assign default membership)
  *     tags: [Auth]
+ *     description: |
+ *       Register a new user with role `member`.  
+ *       The system will automatically assign the default membership package (if it exists).
  *     requestBody:
  *       required: true
  *       content:
@@ -40,7 +43,11 @@ const authController = require('../controllers/auth.controller');
  *                 type: string
  *     responses:
  *       201:
- *         description: User registered
+ *         description: Registration successful
+ *       400:
+ *         description: Email already registered
+ *       500:
+ *         description: Server error
  */
 router.post('/register', authController.register);
 
