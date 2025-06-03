@@ -2,6 +2,9 @@
 const express = require('express');
 const router = express.Router();
 const badgeController = require('../controllers/badge.controller');
+const authenticateToken = require('../middlewares/auth.middleware');
+const { isAdmin } = require('../middlewares/role.middleware');
+
 
 /**
  * @swagger
@@ -49,6 +52,8 @@ router.get('/:id', badgeController.getBadgeById);
  *   post:
  *     summary: Tạo huy hiệu mới
  *     tags: [Badges]
+ *     security:
+ *       - bearerAuth: []
  *     requestBody:
  *       required: true
  *       content:
@@ -58,6 +63,7 @@ router.get('/:id', badgeController.getBadgeById);
  *             required:
  *               - name
  *               - type
+ *               - condition
  *             properties:
  *               name:
  *                 type: string
@@ -68,15 +74,28 @@ router.get('/:id', badgeController.getBadgeById);
  *                 format: date
  *               description:
  *                 type: string
+ *               proOnly:
+ *                 type: boolean
  *               condition:
- *                 type: string
+ *                 type: object
+ *                 properties:
+ *                   type:
+ *                     type: string
+ *                     enum: [no_smoke_days, money_saved]
+ *                   value:
+ *                     type: number
+ *                   unit:
+ *                     type: string
+ *                     enum: [days, vnd]
+ *                   description:
+ *                     type: string
  *     responses:
  *       201:
  *         description: Huy hiệu đã được tạo thành công
  *       400:
  *         description: Lỗi dữ liệu đầu vào
  */
-router.post('/', badgeController.createBadge);
+router.post('/', authenticateToken, isAdmin, badgeController.createBadge);
 
 /**
  * @swagger
@@ -84,6 +103,8 @@ router.post('/', badgeController.createBadge);
  *   put:
  *     summary: Cập nhật huy hiệu theo ID
  *     tags: [Badges]
+ *     security:
+ *       - bearerAuth: []
  *     parameters:
  *       - in: path
  *         name: id
@@ -107,15 +128,28 @@ router.post('/', badgeController.createBadge);
  *                 format: date
  *               description:
  *                 type: string
+ *               proOnly:
+ *                 type: boolean
  *               condition:
- *                 type: string
+ *                 type: object
+ *                 properties:
+ *                   type:
+ *                     type: string
+ *                     enum: [no_smoke_days, money_saved]
+ *                   value:
+ *                     type: number
+ *                   unit:
+ *                     type: string
+ *                     enum: [days, vnd]
+ *                   description:
+ *                     type: string
  *     responses:
  *       200:
  *         description: Huy hiệu đã được cập nhật
  *       404:
  *         description: Không tìm thấy huy hiệu
  */
-router.put('/:id', badgeController.updateBadge);
+router.put('/:id', authenticateToken, isAdmin, badgeController.updateBadge);
 
 /**
  * @swagger
@@ -123,6 +157,8 @@ router.put('/:id', badgeController.updateBadge);
  *   delete:
  *     summary: Xoá huy hiệu theo ID
  *     tags: [Badges]
+ *     security:
+ *       - bearerAuth: []
  *     parameters:
  *       - in: path
  *         name: id
@@ -136,6 +172,6 @@ router.put('/:id', badgeController.updateBadge);
  *       404:
  *         description: Không tìm thấy huy hiệu
  */
-router.delete('/:id', badgeController.deleteBadge);
+router.delete('/:id', authenticateToken, badgeController.deleteBadge);
 
 module.exports = router;

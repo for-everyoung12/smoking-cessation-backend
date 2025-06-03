@@ -60,6 +60,10 @@ app.use('/api/payments', paymentRoutes);
 const transactionRoutes = require('./routes/transaction.routes'); 
 app.use('/api/transactions', transactionRoutes);
 
+//Badge routes
+const badgeRoutes = require('./routes/badge.routes');
+app.use('/api/badges', badgeRoutes);
+
 require('./models/user.model');
 require('./models/quitPlan.model');
 require('./models/progressTracking.model');
