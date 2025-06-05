@@ -1,10 +1,13 @@
-// routes/badge.routes.js
-const express = require('express');
+const express = require("express");
 const router = express.Router();
+<<<<<<< Updated upstream
 const badgeController = require('../controllers/badge.controller');
 const authenticateToken = require('../middlewares/auth.middleware');
 const { isAdmin } = require('../middlewares/role.middleware');
 
+=======
+const badgeController = require("../controllers/badge.controller");
+>>>>>>> Stashed changes
 
 /**
  * @swagger
@@ -23,7 +26,7 @@ const { isAdmin } = require('../middlewares/role.middleware');
  *       200:
  *         description: Trả về danh sách huy hiệu
  */
-router.get('/', badgeController.getAllBadges);
+router.get("/", badgeController.getAllBadges);
 
 /**
  * @swagger
@@ -44,7 +47,7 @@ router.get('/', badgeController.getAllBadges);
  *       404:
  *         description: Không tìm thấy huy hiệu
  */
-router.get('/:id', badgeController.getBadgeById);
+router.get("/:id", badgeController.getBadgeById);
 
 /**
  * @swagger
@@ -77,6 +80,7 @@ router.get('/:id', badgeController.getBadgeById);
  *               proOnly:
  *                 type: boolean
  *               condition:
+<<<<<<< Updated upstream
  *                 type: object
  *                 properties:
  *                   type:
@@ -89,13 +93,23 @@ router.get('/:id', badgeController.getBadgeById);
  *                     enum: [days, vnd]
  *                   description:
  *                     type: string
+=======
+ *                 type: string
+ *               proOnly:
+ *                 type: boolean
+ *                 default: false
+>>>>>>> Stashed changes
  *     responses:
  *       201:
  *         description: Huy hiệu đã được tạo thành công
  *       400:
  *         description: Lỗi dữ liệu đầu vào
  */
+<<<<<<< Updated upstream
 router.post('/', authenticateToken, isAdmin, badgeController.createBadge);
+=======
+router.post("/", badgeController.createBadge);
+>>>>>>> Stashed changes
 
 /**
  * @swagger
@@ -131,6 +145,7 @@ router.post('/', authenticateToken, isAdmin, badgeController.createBadge);
  *               proOnly:
  *                 type: boolean
  *               condition:
+<<<<<<< Updated upstream
  *                 type: object
  *                 properties:
  *                   type:
@@ -143,13 +158,23 @@ router.post('/', authenticateToken, isAdmin, badgeController.createBadge);
  *                     enum: [days, vnd]
  *                   description:
  *                     type: string
+=======
+ *                 type: string
+ *               proOnly:
+ *                 type: boolean
+ *                 default: false
+>>>>>>> Stashed changes
  *     responses:
  *       200:
  *         description: Huy hiệu đã được cập nhật
  *       404:
  *         description: Không tìm thấy huy hiệu
  */
+<<<<<<< Updated upstream
 router.put('/:id', authenticateToken, isAdmin, badgeController.updateBadge);
+=======
+router.put("/:id", badgeController.updateBadge);
+>>>>>>> Stashed changes
 
 /**
  * @swagger
@@ -172,6 +197,10 @@ router.put('/:id', authenticateToken, isAdmin, badgeController.updateBadge);
  *       404:
  *         description: Không tìm thấy huy hiệu
  */
+<<<<<<< Updated upstream
 router.delete('/:id', authenticateToken, badgeController.deleteBadge);
+=======
+router.delete("/:id", badgeController.deleteBadge);
+>>>>>>> Stashed changes
 
 module.exports = router;
