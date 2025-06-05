@@ -1,5 +1,4 @@
-// routes/badge.routes.js
-const express = require('express');
+const express = require("express");
 const router = express.Router();
 const badgeController = require('../controllers/badge.controller');
 const authenticateToken = require('../middlewares/auth.middleware');
@@ -23,7 +22,7 @@ const { isAdmin } = require('../middlewares/role.middleware');
  *       200:
  *         description: Trả về danh sách huy hiệu
  */
-router.get('/', badgeController.getAllBadges);
+router.get("/", badgeController.getAllBadges);
 
 /**
  * @swagger
@@ -44,7 +43,7 @@ router.get('/', badgeController.getAllBadges);
  *       404:
  *         description: Không tìm thấy huy hiệu
  */
-router.get('/:id', badgeController.getBadgeById);
+router.get("/:id", badgeController.getBadgeById);
 
 /**
  * @swagger
