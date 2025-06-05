@@ -1,6 +1,9 @@
 const express = require("express");
 const router = express.Router();
-const badgeController = require("../controllers/badge.controller");
+const badgeController = require('../controllers/badge.controller');
+const authenticateToken = require('../middlewares/auth.middleware');
+const { isAdmin } = require('../middlewares/role.middleware');
+
 
 /**
  * @swagger
