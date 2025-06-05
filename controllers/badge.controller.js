@@ -25,17 +25,12 @@ exports.getBadgeById = async (req, res) => {
 // Tạo badge mới và gán cho user
 exports.createBadge = async (req, res) => {
     try {
-<<<<<<< Updated upstream
         const userId = req.user?._id;
         if (!userId) return res.status(401).json({ error: 'Unauthorized' });
 
         const { name, type, date, description, proOnly, condition } = req.body;
         // condition: { type, value, unit, description }
         const badge = new Badge({ name, type, date, description, proOnly, condition });
-=======
-        const { name, type, date, description, condition, proOnly} = req.body;
-        const badge = new Badge({name, type, date, description, condition, proOnly});
->>>>>>> Stashed changes
         await badge.save();
 
         // Gán badge cho user

@@ -1,13 +1,6 @@
 const express = require("express");
 const router = express.Router();
-<<<<<<< Updated upstream
-const badgeController = require('../controllers/badge.controller');
-const authenticateToken = require('../middlewares/auth.middleware');
-const { isAdmin } = require('../middlewares/role.middleware');
-
-=======
 const badgeController = require("../controllers/badge.controller");
->>>>>>> Stashed changes
 
 /**
  * @swagger
@@ -80,7 +73,6 @@ router.get("/:id", badgeController.getBadgeById);
  *               proOnly:
  *                 type: boolean
  *               condition:
-<<<<<<< Updated upstream
  *                 type: object
  *                 properties:
  *                   type:
@@ -93,23 +85,13 @@ router.get("/:id", badgeController.getBadgeById);
  *                     enum: [days, vnd]
  *                   description:
  *                     type: string
-=======
- *                 type: string
- *               proOnly:
- *                 type: boolean
- *                 default: false
->>>>>>> Stashed changes
  *     responses:
  *       201:
  *         description: Huy hiệu đã được tạo thành công
  *       400:
  *         description: Lỗi dữ liệu đầu vào
  */
-<<<<<<< Updated upstream
 router.post('/', authenticateToken, isAdmin, badgeController.createBadge);
-=======
-router.post("/", badgeController.createBadge);
->>>>>>> Stashed changes
 
 /**
  * @swagger
@@ -145,7 +127,6 @@ router.post("/", badgeController.createBadge);
  *               proOnly:
  *                 type: boolean
  *               condition:
-<<<<<<< Updated upstream
  *                 type: object
  *                 properties:
  *                   type:
@@ -158,23 +139,13 @@ router.post("/", badgeController.createBadge);
  *                     enum: [days, vnd]
  *                   description:
  *                     type: string
-=======
- *                 type: string
- *               proOnly:
- *                 type: boolean
- *                 default: false
->>>>>>> Stashed changes
  *     responses:
  *       200:
  *         description: Huy hiệu đã được cập nhật
  *       404:
  *         description: Không tìm thấy huy hiệu
  */
-<<<<<<< Updated upstream
 router.put('/:id', authenticateToken, isAdmin, badgeController.updateBadge);
-=======
-router.put("/:id", badgeController.updateBadge);
->>>>>>> Stashed changes
 
 /**
  * @swagger
@@ -197,10 +168,6 @@ router.put("/:id", badgeController.updateBadge);
  *       404:
  *         description: Không tìm thấy huy hiệu
  */
-<<<<<<< Updated upstream
 router.delete('/:id', authenticateToken, badgeController.deleteBadge);
-=======
-router.delete("/:id", badgeController.deleteBadge);
->>>>>>> Stashed changes
 
 module.exports = router;
