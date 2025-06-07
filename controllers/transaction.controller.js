@@ -3,7 +3,7 @@ const service = require('../services/transaction.service');
 
 exports.getMyTransactions = async (req, res) => {
   try {
-    const transactions = await service.getMyTransactions(req.user._id);
+    const transactions = await service.getMyTransactions(req.user.id);
     res.json(transactions);
   } catch (err) {
     console.error('[Get My Transactions Error]', err);

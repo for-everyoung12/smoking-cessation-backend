@@ -3,7 +3,7 @@ const service = require('../services/userMembership.service');
 
 exports.getCurrentMembership = async (req, res) => {
   try {
-    const membership = await service.getCurrentMembership(req.user._id);
+    const membership = await service.getCurrentMembership(req.user.id);
     if (!membership) return res.status(404).json({ message: 'Không có membership đang hoạt động' });
     res.json(membership);
   } catch (err) {
@@ -13,7 +13,7 @@ exports.getCurrentMembership = async (req, res) => {
 
 exports.getMyMembershipHistory = async (req, res) => {
   try {
-    const history = await service.getMembershipsByUser(req.user._id);
+    const history = await service.getMembershipsByUser(req.user.id);
     res.json(history);
   } catch (err) {
     res.status(500).json({ message: 'Lỗi truy vấn lịch sử membership' });
