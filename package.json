@@ -2,10 +2,10 @@
   "name": "nosmoking",
   "version": "1.0.0",
   "main": "index.js",
- "scripts": {
-  "start": "node server.js",
-  "dev": "nodemon server.js"
-},
+  "scripts": {
+    "start": "node server.js",
+    "dev": "nodemon server.js"
+  },
   "keywords": [],
   "author": "",
   "license": "ISC",
@@ -22,6 +22,7 @@
     "firebase": "^11.8.1",
     "firebase-admin": "^13.4.0",
     "jsonwebtoken": "^9.0.2",
+    "mongodb": "3.6",
     "mongoose": "^8.15.0",
     "morgan": "^1.10.0",
     "nodemailer": "^7.0.3",

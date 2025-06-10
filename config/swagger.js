@@ -4,7 +4,7 @@ const options = {
   definition: {
     openapi: '3.0.0',
     info: {
-      title: 'SalesApp API Documentation',
+      title: 'Smoking Cessation ',
       version: '1.0.0',
       description: 'API cho ứng dụng bán hàng Android',
     },

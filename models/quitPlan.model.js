@@ -1,16 +1,18 @@
 const mongoose = require('mongoose');
 
 const quitPlanSchema = new mongoose.Schema({
-  user_id: { type: mongoose.Schema.Types.ObjectId, ref: 'User' },
-  coach_user_id: { type: mongoose.Schema.Types.ObjectId, ref: 'User' },
-  goal: Date,
-  start_date: Date,
+  user_id: { type: mongoose.Schema.Types.ObjectId, ref: 'User', required: true },
+  coach_user_id: { type: mongoose.Schema.Types.ObjectId, ref: 'User', default: null },
+  goal: { type: String, required: true }, 
+  start_date: { type: Date, required: true },
   status: {
-  type: String,
-  enum: ['ongoing', 'completed', 'cancelled']
-},
-  note: String
+    type: String,
+    enum: ['ongoing', 'completed', 'cancelled'],
+    default: 'ongoing'
+  },
+  note: { type: String }
 });
+
 
 const QuitPlan = mongoose.model('QuitPlan', quitPlanSchema);
 module.exports = QuitPlan;
