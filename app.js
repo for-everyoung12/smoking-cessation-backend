@@ -4,7 +4,7 @@ const cors = require('cors');
 const dotenv = require('dotenv');
 const mongoose = require('mongoose');
 const swaggerUI = require('swagger-ui-express');
-const swaggerSpec = require('./config/swagger');
+const swaggerSpec = require('./config/swagger.config');
 
 dotenv.config();
 
@@ -44,6 +44,26 @@ app.use('/api/quit-plans', quitStageRoutes);
 const smokingStatusRoutes = require('./routes/smokingStatus.routes');
 app.use('/api/quit-plans', smokingStatusRoutes);
 
+// Membership routes
+const membershipRoutes = require('./routes/membership.routes');
+app.use('/api/memberships', membershipRoutes);
+
+// User membership routes
+const userMembershipRoutes = require('./routes/userMembership.routes');
+app.use('/api/user-membership', userMembershipRoutes);
+
+// Payment routes
+const paymentRoutes = require('./routes/payment.routes');
+app.use('/api/payments', paymentRoutes);
+
+// Transaction routes
+const transactionRoutes = require('./routes/transaction.routes'); 
+app.use('/api/transactions', transactionRoutes);
+
+//Badge routes
+const badgeRoutes = require('./routes/badge.routes');
+app.use('/api/badges', badgeRoutes);
+
 require('./models/user.model');
 require('./models/quitPlan.model');
 require('./models/progressTracking.model');
@@ -64,6 +84,7 @@ require('./models/chatSession.model');
 require('./models/coachUser.model');
 require('./models/coachMessage.model');
 require('./models/progressTracking.model');
+
 
 
 
