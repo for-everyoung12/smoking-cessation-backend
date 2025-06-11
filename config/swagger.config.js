@@ -42,7 +42,7 @@ const options = {
     servers: [
       {
         // url: 'http://localhost:3000/',
-        url: 'https://smoking-cessation-backend.onrender.com/',
+        url: 'https://smoking-cessation-backend.onrender.com/', 
       },
     ],
   },
