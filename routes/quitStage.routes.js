@@ -3,7 +3,7 @@ const stageRouter = express.Router();
 const quitStageController = require('../controllers/quitState.controller');
 const authenticateToken = require('../middlewares/auth.middleware');
 const { verifyPlanOwnership } = require('../middlewares/planOwnership.middleware');
-
+const { isCoach } = require('../middlewares/role.middleware');
 /**
  * @swagger
  * tags:
@@ -100,6 +100,7 @@ stageRouter.get(
 stageRouter.post(
   '/:planId/stages',
   authenticateToken,
+  isCoach,
   verifyPlanOwnership,
   quitStageController.createStage
 );
@@ -165,6 +166,7 @@ stageRouter.post(
 stageRouter.patch(
   '/:planId/stages/:stageId',
   authenticateToken,
+  isCoach,
   verifyPlanOwnership,
   quitStageController.updateStage
 );
@@ -209,6 +211,7 @@ stageRouter.patch(
 stageRouter.delete(
   '/:planId/stages/:stageId',
   authenticateToken,
+  isCoach,
   verifyPlanOwnership,
   quitStageController.deleteStage
 );

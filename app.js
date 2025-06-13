@@ -44,6 +44,8 @@ app.use('/api/quit-plans', quitStageRoutes);
 const smokingStatusRoutes = require('./routes/smokingStatus.routes');
 app.use('/api/quit-plans', smokingStatusRoutes);
 
+app.use('/api/smoking-status',smokingStatusRoutes)
+
 // Membership routes
 const membershipRoutes = require('./routes/membership.routes');
 app.use('/api/memberships', membershipRoutes);

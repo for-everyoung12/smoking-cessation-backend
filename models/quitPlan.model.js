@@ -10,8 +10,11 @@ const quitPlanSchema = new mongoose.Schema({
     enum: ['ongoing', 'completed', 'cancelled'],
     default: 'ongoing'
   },
-  note: { type: String }
+  note: { type: String },
+  reasons: [{ type: String }], 
+  reasons_detail: { type: String },
 });
+
 
 
 const QuitPlan = mongoose.model('QuitPlan', quitPlanSchema);

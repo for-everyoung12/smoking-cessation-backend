@@ -6,8 +6,11 @@ const checkMembershipPermission = (permissionField) => {
       const membership = await UserMembership.findOne({
         user_id: req.user.id,
         status: "active",
-        expire_date: { $gte: new Date() },
-      }).populate("package_id");
+        $or: [
+          { expire_date: null },
+          { expire_date: { $gte: new Date() } }
+        ]
+      }).populate("package_id");      
 
       if (!membership || !membership.package_id?.[permissionField]) {
         return res.status(403).json({

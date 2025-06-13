@@ -6,6 +6,7 @@ const progressTrackingSchema = new mongoose.Schema({
   stage_id: { type: mongoose.Schema.Types.ObjectId, ref: 'QuitStage', required: true },
   date: { type: Date, default: Date.now },
   cigarette_count: { type: Number, required: true },
+  money_spent: { type: Number, default: 0, min: 0 },
   note: { type: String }
 });
 

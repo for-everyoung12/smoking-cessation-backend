@@ -3,6 +3,8 @@ const progressRouter = express.Router();
 const authenticateToken = require('../middlewares/auth.middleware');
 const progressTrackingController = require('../controllers/progressTracking.controller');
 const { verifyPlanOwnership } = require('../middlewares/planOwnership.middleware');
+const checkDuplicateDailyRecord = require('../middlewares/duplicateDailyRecord.middleware');
+const ProgressTracking = require('../models/progressTracking.model');
 /**
  * @swagger
  * tags:
@@ -49,6 +51,7 @@ progressRouter.post(
   '/:planId/stages/:stageId/progress',
   authenticateToken,
   verifyPlanOwnership,
+  checkDuplicateDailyRecord(ProgressTracking, 'date'),
   progressTrackingController.recordProgress
 );
 
