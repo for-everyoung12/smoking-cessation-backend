@@ -40,11 +40,13 @@ module.exports = function (server) {
         });
 
         io.to('community').emit('chat message', {
-          fromUserId: socket.userId,
-          full_name: socket.full_name,
-          message: savedMessage.content,
+          _id: savedMessage._id,
+          content: savedMessage.content,
           created_at: savedMessage.created_at,
-          _id: savedMessage._id
+          author_id: {
+            _id: socket.userId,
+            full_name: socket.full_name
+          }
         });
 
       } catch (err) {
