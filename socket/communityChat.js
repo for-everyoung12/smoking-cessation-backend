@@ -1,8 +1,8 @@
-// socket/communityChat.js
 const { Server } = require('socket.io');
+const jwt = require('jsonwebtoken');
 const CommunityMessage = require('../models/communityMessage.model');
 
-function setupCommunityChat(server) {
+module.exports = function (server) {
   const io = new Server(server, {
     cors: {
       origin: '*',
@@ -10,32 +10,46 @@ function setupCommunityChat(server) {
     }
   });
 
-  io.on('connection', (socket) => {
-    console.log(`[Socket] Guest connected`);
+  io.use((socket, next) => {
+    const token = socket.handshake.auth.token;
+    if (!token) {
+      return next(new Error('No token provided'));
+    }
 
-    socket.on('sendMessage', async (msg) => {
-      if (!msg || typeof msg !== 'string') return;
+    jwt.verify(token, process.env.JWT_SECRET, (err, decoded) => {
+      if (err) {
+        return next(new Error('Invalid token'));
+      }
 
-      const savedMsg = await CommunityMessage.create({
-        author_id: null,
-        content: msg,
-        type: 'message'
-      });
-
-      io.emit('newMessage', {
-        _id: savedMsg._id,
-        author_id: null,
-        content: savedMsg.content,
-        created_at: savedMsg.created_at
-      });
-    });
-
-    socket.on('disconnect', () => {
-      console.log(`[Socket] Guest disconnected`);
+      socket.userId = decoded.id;
+      socket.full_name = decoded.full_name;
+      next();
     });
   });
 
-  return io; 
-}
+  io.on('connection', (socket) => {
+    socket.join('community');
 
-module.exports = setupCommunityChat;
+    socket.on('chat message', async (data) => {
+      try {
+        const savedMessage = await CommunityMessage.create({
+          author_id: socket.userId,
+          content: data.message,
+          type: data.type || 'message',
+          parent_post_id: data.parent_post_id || null
+        });
+
+        io.to('community').emit('chat message', {
+          fromUserId: socket.userId,
+          full_name: socket.full_name,
+          message: savedMessage.content,
+          created_at: savedMessage.created_at,
+          _id: savedMessage._id
+        });
+
+      } catch (err) {
+        console.error('Failed to save message:', err);
+      }
+    });
+  });
+};

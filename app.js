@@ -66,6 +66,10 @@ app.use('/api/transactions', transactionRoutes);
 const badgeRoutes = require('./routes/badge.routes');
 app.use('/api/badges', badgeRoutes);
 
+//Community routes
+const communityMessageRoutes = require('./routes/communityMessage.routes');
+app.use('/api/community', communityMessageRoutes);
+
 require('./models/user.model');
 require('./models/quitPlan.model');
 require('./models/progressTracking.model');
