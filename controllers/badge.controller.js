@@ -1,6 +1,6 @@
 const Badge = require('../models/badge.model');
 const UserBadge = require('../models/userBadge.model');
-
+const mongoose = require('mongoose');
 // Lấy tất cả badge (kèm user_id)
 exports.getAllBadges = async (req, res) => {
     try {
@@ -73,3 +73,61 @@ exports.deleteBadge = async (req, res) => {
         res.status(500).json({ error: err.message });
     }
 };
+
+
+exports.getUserBadges = async (req, res) => {
+  try {
+    const userObjectId = new mongoose.Types.ObjectId(req.user.id);
+    const userBadges = await UserBadge.find({ user_id: userObjectId }).populate('badge_id');
+
+    res.json({
+      badges: userBadges.map(ub => ({
+        ...ub.badge_id.toObject(),
+        granted_date: ub.granted_date
+      }))
+    });
+  } catch (err) {
+    console.error('[getUserBadges]', err);
+    res.status(500).json({ error: err.message });
+  }
+};
+
+exports.getUpcomingBadges = async (req, res) => {
+    try {
+      const userId = new mongoose.Types.ObjectId(req.user.id);
+      
+      // Lấy danh sách badge user đã đạt
+      const userBadges = await UserBadge.find({ user_id: userId }).select('badge_id');
+      const achievedIds = userBadges.map(ub => ub.badge_id);
+  
+      // Lấy badge chưa đạt
+      const upcomingBadges = await Badge.find({ _id: { $nin: achievedIds } });
+  
+      res.json({ badges: upcomingBadges });
+    } catch (err) {
+      console.error('[getUpcomingBadges]', err);
+      res.status(500).json({ error: err.message });
+    }
+  };
+  exports.getBadgeSummary = async (req, res) => {
+    try {
+      const userId = new mongoose.Types.ObjectId(req.user.id);
+  
+      const totalBadges = await Badge.countDocuments();
+      const achievedBadges = await UserBadge.countDocuments({ user_id: userId });
+      const upcomingBadges = totalBadges - achievedBadges;
+  
+      const completionRate = totalBadges > 0 
+        ? Math.round((achievedBadges / totalBadges) * 100)
+        : 0;
+  
+      res.json({
+        badge_achieved_count: achievedBadges,
+        badge_upcoming_count: upcomingBadges,
+        completion_rate: completionRate
+      });
+    } catch (err) {
+      console.error('[getBadgeSummary]', err);
+      res.status(500).json({ error: err.message });
+    }
+  };
