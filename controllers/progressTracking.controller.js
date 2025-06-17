@@ -1,20 +1,21 @@
 const ProgressTracking = require('../models/progressTracking.model');
 const SmokingStatus = require('../models/smokingStatus.model')
+const { checkAndGrantBadges } = require('../utils/badgeHelper');
+
 exports.recordProgress = async (req, res) => {
   try {
     const { cigarette_count, note } = req.body;
 
-    // 🕒 Thời điểm hiện tại theo giờ Việt Nam
     const now = new Date();
     const vnNow = new Date(now.getTime() + 7 * 60 * 60 * 1000);
 
-    // 🔍 Tạo 2 biến tạm để so sánh trùng ngày
+    // Tạo 2 biến tạm để so sánh trùng ngày
     const startOfDay = new Date(vnNow);
     startOfDay.setHours(0, 0, 0, 0);
     const endOfDay = new Date(startOfDay);
     endOfDay.setDate(endOfDay.getDate() + 1);
 
-    // ✅ Kiểm tra xem đã ghi hôm nay chưa
+    // Kiểm tra xem đã ghi hôm nay chưa
     const existing = await ProgressTracking.findOne({
       user_id: req.user.id,
       plan_id: req.params.planId,
@@ -28,7 +29,7 @@ exports.recordProgress = async (req, res) => {
       });
     }
 
-    // 💰 Tính money_spent từ pre-plan
+    // Tính money_spent từ pre-plan
     const preStatus = await SmokingStatus.findOne({
       user_id: req.user.id,
       plan_id: null
@@ -38,20 +39,21 @@ exports.recordProgress = async (req, res) => {
     const moneyPerCig = pricePerPack / 20;
     const moneySpent = cigarette_count * moneyPerCig;
 
-    // ✅ Lưu đúng thời điểm thực tế người dùng bấm (vnNow)
+    // Lưu đúng thời điểm thực tế người dùng bấm (vnNow)
     const progress = await ProgressTracking.create({
       user_id: req.user.id,
       plan_id: req.params.planId,
       stage_id: req.params.stageId,
-      date: vnNow, // ❗ Đây là điểm quan trọng
+      date: vnNow, 
       cigarette_count,
       note,
       money_spent: moneySpent
     });
-
+    const grantedBadges = await checkAndGrantBadges(req.user.id, req.params.planId);
     res.status(201).json({
       message: 'Progress recorded',
-      progress
+      progress,
+      granted_badges: grantedBadges 
     });
 
   } catch (error) {

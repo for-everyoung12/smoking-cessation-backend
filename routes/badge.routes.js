@@ -26,6 +26,144 @@ router.get("/", badgeController.getAllBadges);
 
 /**
  * @swagger
+ * /api/badges/user:
+ *   get:
+ *     summary: Get badges achieved by the authenticated user
+ *     description: |
+ *       Returns a list of badges the user has achieved, including badge details and the date it was granted.
+ *     tags: [Badges]
+ *     security:
+ *       - bearerAuth: []
+ *     responses:
+ *       200:
+ *         description: List of achieved badges
+ *         content:
+ *           application/json:
+ *             schema:
+ *               type: object
+ *               properties:
+ *                 badges:
+ *                   type: array
+ *                   items:
+ *                     type: object
+ *                     properties:
+ *                       _id:
+ *                         type: string
+ *                       name:
+ *                         type: string
+ *                       type:
+ *                         type: string
+ *                       description:
+ *                         type: string
+ *                       proOnly:
+ *                         type: boolean
+ *                       condition:
+ *                         type: object
+ *                         properties:
+ *                           type:
+ *                             type: string
+ *                           value:
+ *                             type: number
+ *                           unit:
+ *                             type: string
+ *                           description:
+ *                             type: string
+ *                       granted_date:
+ *                         type: string
+ *                         format: date-time
+ *       401:
+ *         description: Unauthorized
+ *       500:
+ *         description: Server error
+ */
+router.get('/user', authenticateToken, badgeController.getUserBadges);
+
+/**
+ * @swagger
+ * /api/badges/upcoming:
+ *   get:
+ *     summary: Get upcoming badges that the authenticated user has not yet achieved
+ *     description: Returns a list of badges that the user has not been granted yet.
+ *     tags: [Badges]
+ *     security:
+ *       - bearerAuth: []
+ *     responses:
+ *       200:
+ *         description: List of upcoming badges
+ *         content:
+ *           application/json:
+ *             schema:
+ *               type: object
+ *               properties:
+ *                 badges:
+ *                   type: array
+ *                   items:
+ *                     type: object
+ *                     properties:
+ *                       _id:
+ *                         type: string
+ *                       name:
+ *                         type: string
+ *                       type:
+ *                         type: string
+ *                       date:
+ *                         type: string
+ *                         format: date-time
+ *                       description:
+ *                         type: string
+ *                       proOnly:
+ *                         type: boolean
+ *                       condition:
+ *                         type: object
+ *                         properties:
+ *                           type:
+ *                             type: string
+ *                           value:
+ *                             type: number
+ *                           unit:
+ *                             type: string
+ *                           description:
+ *                             type: string
+ *       401:
+ *         description: Unauthorized
+ *       500:
+ *         description: Server error
+ */
+router.get('/upcoming', authenticateToken, badgeController.getUpcomingBadges);
+
+/**
+ * @swagger
+ * /api/badges/summary:
+ *   get:
+ *     summary: Get badge summary for the authenticated user
+ *     description: Returns badge achieved count, upcoming count, and completion rate.
+ *     tags: [Badges]
+ *     security:
+ *       - bearerAuth: []
+ *     responses:
+ *       200:
+ *         description: Summary of badge progress
+ *         content:
+ *           application/json:
+ *             schema:
+ *               type: object
+ *               properties:
+ *                 badge_achieved_count:
+ *                   type: integer
+ *                 badge_upcoming_count:
+ *                   type: integer
+ *                 completion_rate:
+ *                   type: integer
+ *                   description: Percentage of badges achieved
+ *       401:
+ *         description: Unauthorized
+ *       500:
+ *         description: Server error
+ */
+router.get('/summary', authenticateToken, badgeController.getBadgeSummary);
+
+/**
+ * @swagger
  * /api/badges/{id}:
  *   get:
  *     summary: Lấy huy hiệu theo ID
@@ -44,6 +182,7 @@ router.get("/", badgeController.getAllBadges);
  *         description: Không tìm thấy huy hiệu
  */
 router.get("/:id", badgeController.getBadgeById);
+
 
 /**
  * @swagger
@@ -172,5 +311,7 @@ router.put('/:id', authenticateToken, isAdmin, badgeController.updateBadge);
  *         description: Không tìm thấy huy hiệu
  */
 router.delete('/:id', authenticateToken, badgeController.deleteBadge);
+
+
 
 module.exports = router;
