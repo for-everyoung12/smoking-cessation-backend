@@ -42,7 +42,7 @@ exports.createOrder = async (amount, currency = "USD") => {
         },
       ],
       application_context: {
-        return_url: "https://example.com/paypal-success",
+        return_url: "http://localhost:5173/payment-success",
         cancel_url: "https://example.com/paypal-cancel",
       },
     },
