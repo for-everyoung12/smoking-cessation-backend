@@ -70,6 +70,14 @@ app.use('/api/badges', badgeRoutes);
 const communityMessageRoutes = require('./routes/communityMessage.routes');
 app.use('/api/community', communityMessageRoutes);
 
+// Chat routes
+const chatRoutes = require('./routes/chat.routes');
+app.use('/api/chat', chatRoutes);
+
+// Blog routes
+const blogRoutes = require('./routes/blog.routes');
+app.use('/api/blogs', blogRoutes);
+
 require('./models/user.model');
 require('./models/quitPlan.model');
 require('./models/progressTracking.model');
