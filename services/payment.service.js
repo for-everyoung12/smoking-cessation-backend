@@ -26,7 +26,7 @@ exports.getAccessToken = async () => {
 };
 
 // Tạo order trên PayPal
-exports.createOrder = async (amount, currency = "USD") => {
+exports.createOrder = async (amount, currency = "USD", return_url, cancel_url) => {
   const accessToken = await this.getAccessToken();
 
   const res = await axios.post(
@@ -42,8 +42,8 @@ exports.createOrder = async (amount, currency = "USD") => {
         },
       ],
       application_context: {
-        return_url: "http://localhost:5173/payment-success",
-        cancel_url: "https://example.com/paypal-cancel",
+        return_url: return_url || "http://localhost:5173/payment-success",
+        cancel_url: cancel_url || "https://example.com/paypal-cancel",
       },
     },
     {
