@@ -66,6 +66,18 @@ app.use('/api/transactions', transactionRoutes);
 const badgeRoutes = require('./routes/badge.routes');
 app.use('/api/badges', badgeRoutes);
 
+//Coach route 
+const coachRoutes = require('./routes/coach.routes');
+app.use('/api/coaches', coachRoutes);
+
+//CoachUser route 
+const coachUserRoutes = require('./routes/coachUser.routes');
+app.use('/api/coach-users', coachUserRoutes);
+
+const adminDashboardRoutes = require('./routes/adminDashboard.routes');
+app.use('/api/admin', adminDashboardRoutes);
+
+require('./models/activityLog.model')
 require('./models/user.model');
 require('./models/quitPlan.model');
 require('./models/progressTracking.model');

@@ -351,3 +351,12 @@ exports.getSuggestedStages = async (req, res) => {
     res.status(500).json({ message: "Failed to generate stage suggestions" });
   }
 };
+exports.getAllQuitPlans = async (req, res) => {
+  try {
+    const plans = await QuitPlan.find().populate('user_id', 'full_name email').populate('coach_user_id', 'full_name email');
+    res.json(plans);
+  } catch (error) {
+    console.error('[getAllQuitPlans]', error);
+    res.status(500).json({ message: 'Failed to fetch all quit plans' });
+  }
+};
