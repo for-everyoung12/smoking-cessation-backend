@@ -1,22 +1,15 @@
 const http = require('http');
 const express = require('express');
 const app = require('./app');
-const { Server } = require('socket.io');
+// const setupCommunityChat = require('./socket/communityChat');
+const setupSocket = require("./socket");
+const server = http.createServer(app); 
+// setupCommunityChat(server);            
+setupSocket(server);
+app.use(express.static('public'));
 
-const setupCommunityChat = require('./socket/communityChat');
-const setupChatSession = require('./socket/chatSession');
+const port = process.env.PORT || 3000;
 
-const server = http.createServer(app);
-const io = new Server(server, {
-  cors: {
-    origin: '*',
-    methods: ['GET', 'POST']
-  }
-});
-
-setupCommunityChat(io); // sẽ dùng io.of('/community')
-setupChatSession(io);   // dùng io.of('/coach')
-
-server.listen(3000, () => {
-  console.log('Server is running on port 3000');
+server.listen(port, () => {
+  console.log(`Server is running on port ${port}`);
 });

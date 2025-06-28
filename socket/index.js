@@ -12,15 +12,18 @@ function setupSocket(server) {
     }
   });
 
-  
   setSocketIO(io);
 
+  // CHỈ GỌI 1 LẦN CHO IO
+  setupCommunityChat(io);
+  setupChatSession(io);
+
+  // Còn thằng này thì vẫn cần socket riêng vì dùng .on()
   io.on("connection", (socket) => {
     console.log("[Socket] Client connected");
 
-    setupCommunityChat(io, socket);
     setupNotificationSocket(io, socket);
-    setupChatSession(io, socket);
+
     socket.on("disconnect", () => {
       console.log("[Socket] Client disconnected");
     });
