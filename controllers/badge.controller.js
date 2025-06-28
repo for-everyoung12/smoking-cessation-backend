@@ -1,6 +1,7 @@
 const Badge = require('../models/badge.model');
 const UserBadge = require('../models/userBadge.model');
 const mongoose = require('mongoose');
+
 // Lấy tất cả badge (kèm user_id)
 exports.getAllBadges = async (req, res) => {
     try {

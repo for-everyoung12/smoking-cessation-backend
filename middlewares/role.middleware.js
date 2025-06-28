@@ -3,8 +3,10 @@ const allowRoles = (...allowedRoles) => {
     return (req, res, next) => {
       const userRole = req.user?.role || 'member';
       if (!allowedRoles.includes(userRole)) {
-        return res.status(403).json({ error: 'Access denied' });
-      }
+        return res.status(403).json({
+          error: `Access denied. Required role: ${allowedRoles.join(', ')}`
+        });
+      }      
       next();
     };
   };

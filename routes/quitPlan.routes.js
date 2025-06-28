@@ -4,6 +4,8 @@ const quitPlanController = require('../controllers/quitPlan.controller');
 const authenticateToken = require('../middlewares/auth.middleware');
 const { checkMembershipPermission } = require('../middlewares/membership.middleware');
 const { verifyPlanOwnership } = require('../middlewares/planOwnership.middleware');
+const logActivity = require('../middlewares/activityLog.middleware');
+
 /**
  * @swagger
  * tags:
@@ -11,6 +13,35 @@ const { verifyPlanOwnership } = require('../middlewares/planOwnership.middleware
  *   description: Manage quit smoking plans
  */
 
+
+const { isAdmin } = require('../middlewares/role.middleware');
+
+/**
+ * @swagger
+ * /api/quit-plans:
+ *   get:
+ *     tags: [QuitPlans]
+ *     summary: Get all quit plans (admin only)
+ *     security:
+ *       - bearerAuth: []
+ *     responses:
+ *       200:
+ *         description: List of all quit plans
+ *         content:
+ *           application/json:
+ *             schema:
+ *               type: array
+ *               items:
+ *                 $ref: '#/components/schemas/QuitPlan'
+ *       500:
+ *         description: Failed to fetch plans
+ */
+quitPlanRoutes.get(
+  '/',
+  authenticateToken,
+  isAdmin,
+  quitPlanController.getAllQuitPlans
+);
 
 /**
  * @swagger
@@ -68,11 +99,11 @@ const { verifyPlanOwnership } = require('../middlewares/planOwnership.middleware
  *       500:
  *         description: Failed to create quit plan
  */
-
 quitPlanRoutes.post(
   '/',
   authenticateToken,
   checkMembershipPermission('can_use_quitplan'),
+  logActivity('User created a new quit plan', 'success'),
   quitPlanController.createQuitPlan
 );
 /**

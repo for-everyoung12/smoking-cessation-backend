@@ -223,3 +223,62 @@ exports.resetPassword = async (req, res) => {
     res.status(500).json({ error: 'Reset password failed' });
   }
 };
+
+// Mời coach qua email
+exports.inviteCoach = async (req, res) => {
+  try {
+    const { full_name, email } = req.body;
+
+    const existingUser = await User.findOne({ email });
+    if (existingUser) return res.status(409).json({ error: 'Email already exists' });
+
+    const inviteToken = crypto.randomBytes(32).toString('hex');
+
+    const newCoach = await User.create({
+      full_name,
+      email,
+      role: 'coach',
+      isEmailVerified: false,
+      emailVerificationToken: inviteToken
+    });
+
+    const inviteUrl = `${FRONTEND_URL}/coach-invite/confirm?token=${inviteToken}`;
+    const emailContent = `
+      <div style="font-family:Arial,sans-serif;">
+        <h2>You're invited to be a Coach!</h2>
+        <p>Hello ${full_name || email},</p>
+        <p>You have been invited to join as a coach on our platform. Click the link below to set your password and activate your account:</p>
+        <a href="${inviteUrl}" style="background:#007bff;color:#fff;padding:10px 20px;border-radius:5px;text-decoration:none;">Accept Invitation</a>
+        <p>Or copy this link to your browser:</p>
+        <code>${inviteUrl}</code>
+      </div>
+    `;
+    await sendEmail(email, 'Coach Invitation', emailContent);
+
+    res.status(201).json({ message: 'Invitation sent to coach' });
+  } catch (error) {
+    console.error('[inviteCoach]', error);
+    res.status(500).json({ error: 'Failed to invite coach' });
+  }
+};
+
+exports.confirmCoachInvite = async (req, res) => {
+  try {
+    const { token, password } = req.body;
+
+    const user = await User.findOne({ emailVerificationToken: token });
+    if (!user || user.role !== 'coach') {
+      return res.status(400).json({ error: 'Invalid or expired token' });
+    }
+
+    user.password = await bcrypt.hash(password, 10);
+    user.isEmailVerified = true;
+    user.emailVerificationToken = undefined;
+    await user.save();
+
+    res.json({ message: 'Coach account activated successfully' });
+  } catch (error) {
+    console.error('[confirmCoachInvite]', error);
+    res.status(500).json({ error: 'Failed to activate coach account' });
+  }
+};

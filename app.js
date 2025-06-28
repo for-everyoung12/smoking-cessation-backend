@@ -62,6 +62,26 @@ app.use('/api/transactions', transactionRoutes);
 const badgeRoutes = require('./routes/badge.routes');
 app.use('/api/badges', badgeRoutes);
 
+//Coach route 
+const coachRoutes = require('./routes/coach.routes');
+app.use('/api/coaches', coachRoutes);
+
+//CoachUser route 
+const coachUserRoutes = require('./routes/coachUser.routes');
+app.use('/api/coach-users', coachUserRoutes);
+
+const adminDashboardRoutes = require('./routes/adminDashboard.routes');
+app.use('/api/admin', adminDashboardRoutes);
+
+const reminderRoutes = require('./routes/reminder.routes');
+app.use('/api/reminder', reminderRoutes);
+
+const notificationRoutes = require('./routes/notification.routes');
+app.use('/api/notifications', notificationRoutes);
+
+require('./models/notification.model')
+require('./models/reminder.model')
+require('./models/activityLog.model')
 //Community routes
 const communityMessageRoutes = require('./routes/communityMessage.routes');
 app.use('/api/community', communityMessageRoutes);

@@ -3,6 +3,8 @@ const UserMembership = require('../models/userMembership.model');
 const QuitStage = require('../models/quitStage.model');
 const ProgressTracking = require('../models/progressTracking.model');
 const SmokingStatus = require('../models/smokingStatus.model');
+const { sendNotification } = require('../utils/notify');
+
 // Helper function to create default quit stages
 function generateSuggestedStages(status) {
   const { cigarette_count = 0, suction_frequency = "medium" } = status;
@@ -96,8 +98,6 @@ function generateSuggestedStages(status) {
 
   return stages;
 }
-
-
 
 async function createSuggestedStages(planId, startDate, userId) {
   const latestStatus = await SmokingStatus.findOne({
@@ -208,6 +208,12 @@ exports.createQuitPlan = async (req, res) => {
 
     const createdStages = await createSuggestedStages(newPlan._id, selectedDate.toISOString(), req.user.id);
 
+    await sendNotification(
+    req.user.id,
+    "🎯 Quit plan created",
+    `You have created a plan "${goal}" starting from ${selectedDate.toLocaleDateString()}. Keep it up!`,
+    "quitplan"
+    );
     return res.status(201).json({
       message: 'Quit plan created successfully.',
       plan: newPlan,
@@ -349,5 +355,14 @@ exports.getSuggestedStages = async (req, res) => {
   } catch (error) {
     console.error("[getSuggestedStages]", error);
     res.status(500).json({ message: "Failed to generate stage suggestions" });
+  }
+};
+exports.getAllQuitPlans = async (req, res) => {
+  try {
+    const plans = await QuitPlan.find().populate('user_id', 'full_name email').populate('coach_user_id', 'full_name email');
+    res.json(plans);
+  } catch (error) {
+    console.error('[getAllQuitPlans]', error);
+    res.status(500).json({ message: 'Failed to fetch all quit plans' });
   }
 };
