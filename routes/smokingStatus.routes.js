@@ -4,6 +4,8 @@ const authenticateToken = require('../middlewares/auth.middleware');
 const smokingStatusController = require('../controllers/smokingStatus.controller');
 const checkDuplicateDailyRecord = require('../middlewares/duplicateDailyRecord.middleware');
 const SmokingStatus = require('../models/smokingStatus.model');
+const logActivity = require('../middlewares/activityLog.middleware');
+
 /**
  * @swagger
  * /api/quit-plan/{planId}/stages/{stageId}/status:
@@ -131,6 +133,7 @@ smokingStatusRoutes.get('/:planId/stages/:stageId/status', authenticateToken, sm
 smokingStatusRoutes.post(
     '/pre-plan',
     authenticateToken,
+    logActivity('User recorded smoking status for today', 'success'),
     smokingStatusController.recordInitialSmokingStatus
   );
   

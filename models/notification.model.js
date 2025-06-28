@@ -5,7 +5,8 @@ const notificationSchema = new mongoose.Schema({
   title: String,
   content: String,
   sent_at: Date,
-  type: String
+  type: String,
+  is_read: { type: Boolean, default: false }
 });
 
 const Notification = mongoose.model('Notification', notificationSchema);

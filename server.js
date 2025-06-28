@@ -1,18 +1,12 @@
 const express = require('express');
 const app = require('./app');
 const http = require('http');
-const setupCommunityChat = require('./socket/communityChat');
-const setupChatSession = require('./socket/chatSession');
-
-const server = http.createServer(app);
-
+// const setupCommunityChat = require('./socket/communityChat');
+const setupSocket = require("./socket");
+const server = http.createServer(app); 
+// setupCommunityChat(server);            
+setupSocket(server);
 app.use(express.static('public'));
-
-// Setup community chat socket
-setupCommunityChat(server);
-
-// Setup chat session socket (PHẦN MỚI)
-setupChatSession(server);
 
 const port = process.env.PORT || 3000;
 
