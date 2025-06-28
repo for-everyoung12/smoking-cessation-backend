@@ -1,6 +1,6 @@
+const http = require('http');
 const express = require('express');
 const app = require('./app');
-const http = require('http');
 // const setupCommunityChat = require('./socket/communityChat');
 const setupSocket = require("./socket");
 const server = http.createServer(app); 

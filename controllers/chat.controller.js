@@ -53,7 +53,9 @@ exports.getMessages = async (req, res) => {
       return res.status(403).json({ success: false, message: 'Permission denied' });
     }
 
-    const messages = await CoachMessage.find({ session_id: sessionId }).sort({ sent_at: 1 });
+    const messages = await CoachMessage.find({ session_id: sessionId })
+      .sort({ sent_at: 1 })
+      .populate('user_id', 'full_name');
     res.status(200).json({ success: true, data: messages });
   } catch (err) {
     console.error('[getMessages]', err);
