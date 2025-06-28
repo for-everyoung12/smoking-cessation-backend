@@ -1,22 +1,24 @@
-// cron/index.js
-const cron = require('node-cron');
-const { exec } = require('child_process');
+const cron = require("node-cron");
+const { exec } = require("child_process");
 
-console.log('Scheduler đang chạy...');
+console.log("Scheduler đang chạy...");
 
-cron.schedule('0 * * * *', () => { // mỗi giờ chạy 1 lần
-  console.log(`Chạy job hết hạn membership lúc ${new Date().toLocaleString()}`);
+// ⏱️ Membership: mỗi giờ 1 lần
+cron.schedule("0 * * * *", () => {
+  console.log(`⌛ Expire memberships @ ${new Date().toLocaleString()}`);
+  exec("node cron/expireMemberships.js", (error, stdout, stderr) => {
+    if (stdout) console.log(stdout);
+    if (stderr) console.error(stderr);
+    if (error) console.error("❌ expireMemberships error:", error.message);
+  });
+});
 
-  exec('node cron/expireMemberships.js', (error, stdout, stderr) => {
-    if (error) {
-      console.error(`Lỗi khi chạy expireMemberships: ${error.message}`);
-      return;
-    }
-    if (stderr) {
-      console.error(`stderr: ${stderr}`);
-    }
-    if (stdout) {
-      console.log(`stdout: ${stdout}`);
-    }
+// 🔁 Reminder: mỗi phút
+cron.schedule("* * * * *", () => {
+  console.log(`🔔 Process reminders @ ${new Date().toLocaleString()}`);
+  exec("node cron/processReminders.js", (error, stdout, stderr) => {
+    if (stdout) console.log(stdout);
+    if (stderr) console.error(stderr);
+    if (error) console.error("❌ processReminders error:", error.message);
   });
 });

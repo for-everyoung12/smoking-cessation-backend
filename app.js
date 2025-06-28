@@ -77,6 +77,14 @@ app.use('/api/coach-users', coachUserRoutes);
 const adminDashboardRoutes = require('./routes/adminDashboard.routes');
 app.use('/api/admin', adminDashboardRoutes);
 
+const reminderRoutes = require('./routes/reminder.routes');
+app.use('/api/reminder', reminderRoutes);
+
+const notificationRoutes = require('./routes/notification.routes');
+app.use('/api/notifications', notificationRoutes);
+
+require('./models/notification.model')
+require('./models/reminder.model')
 require('./models/activityLog.model')
 require('./models/user.model');
 require('./models/quitPlan.model');

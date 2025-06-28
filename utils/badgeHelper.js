@@ -2,6 +2,7 @@ const Badge = require('../models/badge.model');
 const UserBadge = require('../models/userBadge.model');
 const ProgressTracking = require('../models/progressTracking.model');
 const SmokingStatus = require('../models/smokingStatus.model');
+const { sendNotification } = require('../utils/notify'); // 🔥 thêm dòng này
 
 async function checkAndGrantBadges(userId, planId, isPro) {
   const badges = await Badge.find();
@@ -18,7 +19,7 @@ async function checkAndGrantBadges(userId, planId, isPro) {
 
   for (const badge of badges) {
     if (badge.proOnly && !isPro) {
-      continue; 
+      continue;
     }
 
     let isQualified = false;
@@ -40,6 +41,15 @@ async function checkAndGrantBadges(userId, planId, isPro) {
           badge_id: badge._id,
           granted_date: vnNow
         });
+
+        // 🔔 Gửi thông báo ngay sau khi cấp
+        await sendNotification(
+          userId,
+          "🏅 Bạn vừa đạt được huy hiệu!",
+          `Huy hiệu: "${badge.name}" - ${badge.description || 'Chúc mừng thành tích của bạn!'}`,
+          "badge"
+        );
+
         grantedBadges.push(userBadge);
       }
     }
@@ -47,6 +57,5 @@ async function checkAndGrantBadges(userId, planId, isPro) {
 
   return grantedBadges;
 }
-
 
 module.exports = { checkAndGrantBadges };
