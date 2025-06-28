@@ -1,6 +1,7 @@
 const { Server } = require("socket.io");
 const setupCommunityChat = require('./communityChat');
 const setupNotificationSocket = require('./notificationSocket');
+const setupChatSession = require("./chatSession");
 const { setSocketIO } = require('../utils/notify');
 
 function setupSocket(server) {
@@ -19,7 +20,7 @@ function setupSocket(server) {
 
     setupCommunityChat(io, socket);
     setupNotificationSocket(io, socket);
-
+    setupChatSession(io, socket);
     socket.on("disconnect", () => {
       console.log("[Socket] Client disconnected");
     });
