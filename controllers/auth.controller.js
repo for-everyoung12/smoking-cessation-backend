@@ -104,15 +104,25 @@ exports.login = async (req, res) => {
     const { email, password } = req.body;
     const user = await User.findOne({ email });
 
-    if (!user || !user.isEmailVerified)
+    if (!user || !user.isEmailVerified) {
       return res.status(400).json({ error: 'Invalid credentials or email not verified' });
+    }
 
     const isMatch = await bcrypt.compare(password, user.password);
-    if (!isMatch) return res.status(400).json({ error: 'Invalid email or password' });
+    if (!isMatch) {
+      return res.status(400).json({ error: 'Invalid email or password' });
+    }
 
-    const token = jwt.sign({ id: user._id, role: user.role }, JWT_SECRET, { expiresIn: '7d' });
+    const token = jwt.sign(
+      {
+        id: user._id,
+        full_name: user.full_name,
+        role: user.role
+      },
+      JWT_SECRET,
+      { expiresIn: '7d' }
+    );
 
-    // Trả về full thông tin user (ngoại trừ mật khẩu)
     const { password: _, ...userData } = user.toObject();
 
     res.json({
@@ -121,16 +131,18 @@ exports.login = async (req, res) => {
       user: userData
     });
   } catch (error) {
+    console.error(error);
     res.status(500).json({ error: 'Login failed' });
   }
 };
+
 
 // LOGIN WITH GOOGLE
 exports.loginWithGoogle = async (req, res) => {
   const { idToken } = req.body;
   try {
     const decodedToken = await admin.auth().verifyIdToken(idToken);
-    const { uid, email, name, picture } = decodedToken;
+    const { email, name, picture } = decodedToken;
 
     let user = await User.findOne({ email });
     if (!user) {
@@ -144,21 +156,31 @@ exports.loginWithGoogle = async (req, res) => {
       });
     }
 
-    const token = jwt.sign({ id: user._id, role: user.role }, JWT_SECRET, { expiresIn: '7d' });
-    // Trả về thông tin user (ngoại trừ mật khẩu)
+    const token = jwt.sign(
+      {
+        id: user._id,
+        full_name: user.full_name,
+        role: user.role
+      },
+      JWT_SECRET,
+      { expiresIn: '7d' }
+    );
+
     const { password: _, ...userData } = user.toObject();
-    userData.profilePicture = picture || 'https://example.com/default-profile.png'; 
-    res.status(200).json({
+    userData.profilePicture = picture || 'https://example.com/default-profile.png';
+
+    res.json({
       message: 'Login successful',
       token,
       user: userData
     });
-    
+
   } catch (error) {
     console.error('Error verifying Google ID Token:', error);
     res.status(401).json({ error: 'Invalid Google token' });
   }
 };
+
 
 // FORGOT PASSWORD
 exports.forgotPassword = async (req, res) => {
