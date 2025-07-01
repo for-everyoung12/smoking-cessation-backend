@@ -16,7 +16,6 @@ function setupSocket(server) {
   setSocketIO(io);
 
   io.on("connection", (socket) => {
-    console.log("[Socket] Client connected");
 
     setupCommunityChat(io, socket);
     setupNotificationSocket(io, socket);

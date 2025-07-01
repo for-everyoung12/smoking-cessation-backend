@@ -6,7 +6,6 @@ const MembershipPackage = require("../models/membershipPackage.model");
 const transactionService = require("../services/transaction.service");
 
 exports.createPaypalOrder = async (req, res) => {
-    console.log("Request Body nhận được:", req.body); 
 
   try {
     const userId = req.user._id || req.user.id; 

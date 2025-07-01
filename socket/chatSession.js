@@ -26,11 +26,10 @@ const setupChatSession = (server) => {
   });
 
   io.on('connection', (socket) => {
-    console.log(`Chat coach socket connected: ${socket.id}`);
+
 
     socket.on('joinSession', (sessionId) => {
       socket.join(sessionId);
-      console.log(`Socket ${socket.id} joined session ${sessionId}`);
     });
 
     socket.on('sendMessage', async ({ sessionId, content }) => {

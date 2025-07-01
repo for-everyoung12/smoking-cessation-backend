@@ -12,9 +12,13 @@ exports.getMyNotifications = async (req, res) => {
 
 exports.markAllAsRead = async (req, res) => {
   try {
-    // Optionally add read status in schema to support this
-    res.status(200).json({ message: "Marked all as read (mock)" });
+    await Notification.updateMany(
+      { user_id: req.user.id, is_read: false },
+      { $set: { is_read: true } }
+    );
+    res.status(200).json({ message: "Marked all as read" });
   } catch (error) {
+    console.error("[markAllAsRead]", error);
     res.status(500).json({ message: "Failed to mark notifications" });
   }
 };
