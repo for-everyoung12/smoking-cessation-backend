@@ -38,6 +38,25 @@ exports.getOrCreateSession = async (req, res) => {
   }
 };
 
+exports.getSessionsByCoach = async (req, res) => {
+  try {
+    const coachId = req.user.id;
+
+    const sessions = await ChatSession.find({
+      coach_id: coachId,
+      status: 'open'
+    })
+      .sort({ last_active_at: -1 })
+      .populate('user_id', 'full_name email');
+
+    res.status(200).json({ success: true, data: sessions });
+  } catch (err) {
+    console.error('[getSessionsByCoach]', err);
+    res.status(500).json({ success: false, message: 'Failed to fetch sessions' });
+  }
+};
+
+
 exports.getMessages = async (req, res) => {
   try {
     const { sessionId } = req.params;

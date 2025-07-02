@@ -29,6 +29,30 @@ router.get(
   chatCtrl.getOrCreateSession
 );
 
+
+/**
+ * @swagger
+ * /api/chat/sessions:
+ *   get:
+ *     summary: Lấy danh sách phiên chat của coach
+ *     tags: [Chat]
+ *     security:
+ *       - bearerAuth: []
+ *     responses:
+ *       200:
+ *         description: Danh sách phiên chat
+ *       403:
+ *         description: Không có quyền
+ *       500:
+ *         description: Lỗi server
+ */
+router.get(
+  '/sessions',
+  authenticateToken,
+  chatCtrl.getSessionsByCoach
+);
+
+
 /**
  * @swagger
  * /api/chat/messages/{sessionId}:
