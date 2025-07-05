@@ -1,6 +1,6 @@
+const http = require('http');
 const express = require('express');
 const app = require('./app');
-const http = require('http');
 const setupSocket = require("./socket");
 const { setSocketIO } = require("./utils/notify"); // ✅ THÊM DÒNG NÀY
 

@@ -38,6 +38,25 @@ exports.getOrCreateSession = async (req, res) => {
   }
 };
 
+exports.getSessionsByCoach = async (req, res) => {
+  try {
+    const coachId = req.user.id;
+
+    const sessions = await ChatSession.find({
+      coach_id: coachId,
+      status: 'open'
+    })
+      .sort({ last_active_at: -1 })
+      .populate('user_id', 'full_name email');
+
+    res.status(200).json({ success: true, data: sessions });
+  } catch (err) {
+    console.error('[getSessionsByCoach]', err);
+    res.status(500).json({ success: false, message: 'Failed to fetch sessions' });
+  }
+};
+
+
 exports.getMessages = async (req, res) => {
   try {
     const { sessionId } = req.params;
@@ -53,7 +72,9 @@ exports.getMessages = async (req, res) => {
       return res.status(403).json({ success: false, message: 'Permission denied' });
     }
 
-    const messages = await CoachMessage.find({ session_id: sessionId }).sort({ sent_at: 1 });
+    const messages = await CoachMessage.find({ session_id: sessionId })
+      .sort({ sent_at: 1 })
+      .populate('user_id', 'full_name');
     res.status(200).json({ success: true, data: messages });
   } catch (err) {
     console.error('[getMessages]', err);

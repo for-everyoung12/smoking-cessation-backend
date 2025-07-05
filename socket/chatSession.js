@@ -1,35 +1,36 @@
-const { Server } = require('socket.io');
+// chatSession.js (updated to fetch full_name from DB)
 const jwt = require('jsonwebtoken');
 const ChatSession = require('../models/chatSession.model');
 const CoachUser = require('../models/coachUser.model');
 const CoachMessage = require('../models/coachMessage.model');
+const User = require('../models/user.model');
 
-const setupChatSession = (server) => {
-  const io = new Server(server, {
-    cors: {
-      origin: '*',
-      methods: ['GET', 'POST']
-    }
-  });
+module.exports = function(io) {
+  const coachNamespace = io.of('/coach');
 
-  io.use((socket, next) => {
+  coachNamespace.use(async (socket, next) => {
     const token = socket.handshake.auth.token;
     if (!token) return next(new Error('No token provided'));
 
-    jwt.verify(token, process.env.JWT_SECRET, (err, decoded) => {
-      if (err) return next(new Error('Invalid token'));
-
+    try {
+      const decoded = jwt.verify(token, process.env.JWT_SECRET);
       socket.userId = decoded.id;
-      socket.full_name = decoded.full_name;
+
+      const user = await User.findById(decoded.id).select('full_name');
+      socket.full_name = user?.full_name || 'NoName';
+
       next();
-    });
+    } catch (err) {
+      return next(new Error('Invalid token'));
+    }
   });
 
-  io.on('connection', (socket) => {
-
+  coachNamespace.on('connection', (socket) => {
+    console.log(`[COACH] Socket connected: ${socket.id}`);
 
     socket.on('joinSession', (sessionId) => {
       socket.join(sessionId);
+      console.log(`[COACH] Socket ${socket.id} joined session ${sessionId}`);
     });
 
     socket.on('sendMessage', async ({ sessionId, content }) => {
@@ -46,6 +47,7 @@ const setupChatSession = (server) => {
           coach_id: session.coach_id,
           status: 'active'
         });
+
         if (!validRelation) {
           return socket.emit('errorMessage', 'Invalid coach-user relation');
         }
@@ -60,7 +62,7 @@ const setupChatSession = (server) => {
 
         await ChatSession.findByIdAndUpdate(sessionId, { last_active_at: new Date() });
 
-        io.to(sessionId).emit('newMessage', {
+        coachNamespace.to(sessionId).emit('newMessage', {
           ...msg.toObject(),
           author: {
             _id: socket.userId,
@@ -68,15 +70,13 @@ const setupChatSession = (server) => {
           }
         });
       } catch (err) {
-        console.error('[ChatCoach Socket Error]', err);
+        console.error('[COACH] Socket error:', err);
         socket.emit('errorMessage', 'Server error');
       }
     });
 
     socket.on('disconnect', () => {
-      console.log(`Chat coach socket disconnected: ${socket.id}`);
+      console.log(`[COACH] Socket disconnected: ${socket.id}`);
     });
   });
 };
-
-module.exports = setupChatSession;
