@@ -61,4 +61,49 @@ router.get(
   adminDashboardController.getAdminDashboardStats
 );
 
+/**
+ * @swagger
+ * /api/admin/reminders/send:
+ *   post:
+ *     tags: [AdminDashboard]
+ *     summary: Admin gửi reminder đến user
+ *     security:
+ *       - bearerAuth: []
+ *     requestBody:
+ *       required: true
+ *       content:
+ *         application/json:
+ *           schema:
+ *             type: object
+ *             properties:
+ *               user_ids:
+ *                 type: array
+ *                 items:
+ *                   type: string
+ *                 example: ["user_id_1", "user_id_2"]
+ *               title:
+ *                 type: string
+ *                 example: Nhắc cập nhật nhật ký
+ *               content:
+ *                 type: string
+ *                 example: Bạn đã cập nhật quá trình bỏ thuốc hôm nay chưa?
+ *               remind_at:
+ *                 type: string
+ *                 format: date-time
+ *                 example: "2025-07-01T15:00:00.000Z"
+ *               is_recurring:
+ *                 type: boolean
+ *                 example: false
+ *               repeat_pattern:
+ *                 type: string
+ *                 enum: [daily, weekly, monthly]
+ *     responses:
+ *       200:
+ *         description: Reminder sent to all users
+ */
+router.post(
+  "/reminders/send",
+  authenticateToken,
+  adminDashboardController.sendReminderToUsers
+);
 module.exports = router;
