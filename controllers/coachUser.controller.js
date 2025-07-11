@@ -61,3 +61,10 @@ exports.deleteCoachUser = async (req, res) => {
     res.status(500).json({ message: 'Failed to delete relation' });
   }
 };
+
+exports.getCoachByUserId = async (req, res) => {
+  const { userId } = req.params;
+  const mapping = await CoachUser.findOne({ user_id: userId, status: "active" });
+  if (!mapping) return res.status(404).json({ message: "No coach found" });
+  res.json({ coachId: mapping.coach_id });
+};

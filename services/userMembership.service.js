@@ -7,7 +7,9 @@ exports.getCurrentMembership = async (userId) => {
     user_id: userId,
     status: 'active',
     expire_date: { $gte: new Date() }
-  }).populate('package_id');
+  })
+    .populate('user_id', 'username email')
+    .populate('package_id');
 };
 
 exports.getAllMemberships = async () => {
@@ -18,6 +20,7 @@ exports.getAllMemberships = async () => {
 
 exports.getMembershipsByUser = async (userId) => {
   return await UserMembership.find({ user_id: userId })
+    .populate('user_id', 'username email')
     .populate('package_id')
     .sort({ payment_date: -1 });
 };
