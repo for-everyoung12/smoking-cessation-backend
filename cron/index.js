@@ -1,9 +1,7 @@
 const cron = require("node-cron");
+const processReminders = require("./processReminders");
 const { exec } = require("child_process");
 
-console.log("Scheduler đang chạy...");
-
-// ⏱️ Membership: mỗi giờ 1 lần
 cron.schedule("0 * * * *", () => {
   console.log(`⌛ Expire memberships @ ${new Date().toLocaleString()}`);
   exec("node cron/expireMemberships.js", (error, stdout, stderr) => {
@@ -13,12 +11,17 @@ cron.schedule("0 * * * *", () => {
   });
 });
 
-// 🔁 Reminder: mỗi phút
-cron.schedule("* * * * *", () => {
+//  Reminder: mỗi phút (CHUYỂN sang gọi trực tiếp)
+cron.schedule("* * * * *", async () => {
   console.log(`🔔 Process reminders @ ${new Date().toLocaleString()}`);
-  exec("node cron/processReminders.js", (error, stdout, stderr) => {
+  await processReminders(); // chạy trực tiếp trong main process, có access socket
+});
+
+cron.schedule("0 2 * * *", () => {
+  console.log(`⏳ Skipping expired stages @ ${new Date().toLocaleString()}`);
+  exec("node cron/markSkippedStages.js", (error, stdout, stderr) => {
     if (stdout) console.log(stdout);
     if (stderr) console.error(stderr);
-    if (error) console.error("❌ processReminders error:", error.message);
+    if (error) console.error("❌ markSkippedStages error:", error.message);
   });
 });

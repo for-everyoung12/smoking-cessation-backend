@@ -68,6 +68,11 @@ exports.recordInitialSmokingStatus = async (req, res) => {
       packs_per_week
     } = req.body;
 
+    const now = new Date(); 
+    const vnOffset = 7 * 60 * 60 * 1000;
+    const vnDate = new Date(now.getTime() + vnOffset);
+    vnDate.setHours(0, 0, 0, 0);
+
     const record = await SmokingStatus.create({
       user_id: req.user.id,
       cigarette_count,
@@ -79,15 +84,17 @@ exports.recordInitialSmokingStatus = async (req, res) => {
       packs_per_week,
       plan_id: null,
       stage_id: null,
-      record_date: new Date()
+      record_date: new Date(vnDate.getTime() - vnOffset)  
     });
 
     res.status(201).json({ message: 'Initial smoking status recorded', record });
+
   } catch (error) {
     console.error('[recordInitialSmokingStatus]', error);
     res.status(500).json({ message: 'Failed to record initial status' });
   }
 };
+
 
 
 exports.getLatestPrePlanStatus = async (req, res) => {

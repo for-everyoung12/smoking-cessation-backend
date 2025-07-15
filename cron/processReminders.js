@@ -5,6 +5,7 @@ const Reminder = require("../models/reminder.model");
 const Notification = require("../models/notification.model");
 const sendEmail = require("../utils/sendmail");
 const User = require("../models/user.model");
+const { getSocketIO } = require("../utils/notify");
 
 dotenv.config();
 
@@ -16,42 +17,64 @@ async function processReminders() {
     });
 
     const now = new Date();
-
     const reminders = await Reminder.find({
       remind_at: { $lte: now }
     });
 
+    const io = getSocketIO();
+
     for (const reminder of reminders) {
       const user = await User.findById(reminder.user_id);
-      if (!user) continue;
+      if (!user) {
+        console.warn("⚠️ Không tìm thấy user:", reminder.user_id);
+        continue;
+      }
 
-      // Gửi notification
-      await Notification.create({
+      const notificationData = {
         user_id: user._id,
         title: reminder.title,
         content: reminder.content,
         sent_at: new Date(),
-        type: "reminder"
-      });
+        type: "reminder",
+        is_read: false
+      };
 
-      // Gửi email
-      await sendEmail(user.email, `[Reminder] ${reminder.title}`, `<p>${reminder.content}</p>`);
+      io.to(user._id.toString()).emit("newNotification", notificationData);
 
-      // Nếu là recurring thì cập nhật remind_at
-      if (reminder.is_recurring && reminder.repeat_pattern === "daily") {
-        reminder.remind_at.setDate(reminder.remind_at.getDate() + 1);
+      await Notification.create(notificationData);
+
+      await sendEmail(
+        user.email,
+        `[Reminder] ${reminder.title}`,
+        `<p>${reminder.content}</p>`
+      );
+
+      if (reminder.is_recurring) {
+        switch (reminder.repeat_pattern) {
+          case "daily":
+            reminder.remind_at.setDate(reminder.remind_at.getDate() + 1);
+            break;
+          case "weekly":
+            reminder.remind_at.setDate(reminder.remind_at.getDate() + 7);
+            break;
+          case "monthly":
+            reminder.remind_at.setMonth(reminder.remind_at.getMonth() + 1);
+            break;
+          default:
+            console.warn("❌ Repeat pattern không hợp lệ:", reminder.repeat_pattern);
+            await Reminder.findByIdAndDelete(reminder._id);
+            continue;
+        }
         await reminder.save();
       } else {
         await Reminder.findByIdAndDelete(reminder._id);
       }
     }
 
-    console.log(`Đã xử lý ${reminders.length} reminder lúc ${now.toLocaleString()}`);
+  
   } catch (error) {
     console.error("[processReminders]", error);
-  } finally {
-    await mongoose.disconnect();
-  }
+  } 
 }
 
-processReminders();
+module.exports = processReminders;
