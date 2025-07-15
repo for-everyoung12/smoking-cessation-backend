@@ -125,24 +125,18 @@ async function createSuggestedStages(planId, startDate, userId) {
 
   const stages = latestStatus ? generateSuggestedStages(latestStatus) : fallback;
 
-  // ✅ Dùng startDate đã là Date object hoặc ISO string
   const start = new Date(startDate);
-  if (isNaN(start.getTime())) {
-    throw new Error('Invalid start date for stage generation');
-  }
-
-  const now = new Date();
-  const vnNow = new Date(now.getTime() + 7 * 60 * 60 * 1000);
+  start.setHours(0, 0, 0, 0); // reset giờ về 00:00
 
   return Promise.all(
     stages.map((stage, index) => {
       const stageStart = new Date(start);
       stageStart.setDate(stageStart.getDate() + index * 7);
-      stageStart.setHours(vnNow.getHours(), vnNow.getMinutes(), vnNow.getSeconds());
+      stageStart.setHours(0, 0, 0, 0); // bắt đầu từ 00:00 VN
 
       const stageEnd = new Date(stageStart);
       stageEnd.setDate(stageEnd.getDate() + 6);
-      stageEnd.setHours(vnNow.getHours(), vnNow.getMinutes(), vnNow.getSeconds());
+      stageEnd.setHours(23, 59, 59, 999); // kết thúc vào cuối ngày
 
       return QuitStage.create({
         plan_id: planId,
@@ -155,6 +149,7 @@ async function createSuggestedStages(planId, startDate, userId) {
     })
   );
 }
+
 
 
 
@@ -186,16 +181,13 @@ exports.createQuitPlan = async (req, res) => {
       return res.status(409).json({ message: 'You already have an active quit plan.' });
     }
 
-    // ✅ Dùng lại start_date do FE đã gửi đúng ISO format
     const selectedDate = new Date(start_date);
     if (isNaN(selectedDate.getTime())) {
       return res.status(400).json({ message: 'Invalid start_date format.' });
     }
 
-    // ✅ Thêm giờ hiện tại theo GMT+7 (nếu bạn muốn có timestamp chính xác)
-    const now = new Date();
-    const vnNow = new Date(now.getTime() + 7 * 60 * 60 * 1000);
-    selectedDate.setHours(vnNow.getHours(), vnNow.getMinutes(), vnNow.getSeconds());
+    // Reset giờ về 00:00 giờ VN
+    selectedDate.setHours(0, 0, 0, 0);
 
     const newPlan = await QuitPlan.create({
       user_id: req.user.id,
@@ -206,14 +198,19 @@ exports.createQuitPlan = async (req, res) => {
       note
     });
 
-    const createdStages = await createSuggestedStages(newPlan._id, selectedDate.toISOString(), req.user.id);
+    const createdStages = await createSuggestedStages(
+      newPlan._id,
+      selectedDate.toISOString(),
+      req.user.id
+    );
 
     await sendNotification(
-    req.user.id,
-    "🎯 Quit plan created",
-    `You have created a plan "${goal}" starting from ${selectedDate.toLocaleDateString()}. Keep it up!`,
-    "quitplan"
+      req.user.id,
+      " Quit plan created",
+      `You have created a plan "${goal}" starting from ${selectedDate.toLocaleDateString('vi-VN')}. Keep it up!`,
+      "quitplan"
     );
+
     return res.status(201).json({
       message: 'Quit plan created successfully.',
       plan: newPlan,
@@ -225,7 +222,6 @@ exports.createQuitPlan = async (req, res) => {
     return res.status(500).json({ message: 'Failed to create quit plan.' });
   }
 };
-
 
 
 

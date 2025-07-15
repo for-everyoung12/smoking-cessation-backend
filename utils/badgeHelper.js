@@ -9,10 +9,11 @@ async function checkAndGrantBadges(userId, planId, isPro) {
   if (!badges.length) return [];
 
   const progresses = await ProgressTracking.find({ user_id: userId, plan_id: planId });
-  const smokingStatuses = await SmokingStatus.find({ user_id: userId, plan_id: planId });
+  // const smokingStatuses = await SmokingStatus.find({ user_id: userId, plan_id: planId });
 
   const noSmokeDays = progresses.filter(p => p.cigarette_count === 0).length;
-  const totalMoneySaved = smokingStatuses.reduce((sum, s) => sum + (s.money_spent || 0), 0);
+  const totalMoneySaved = progresses.reduce((sum, p) => sum + (p.money_spent || 0), 0);
+
 
   const grantedBadges = [];
   const vnNow = new Date(new Date().getTime() + 7 * 60 * 60 * 1000);

@@ -11,8 +11,17 @@ cron.schedule("0 * * * *", () => {
   });
 });
 
-// 🔁 Reminder: mỗi phút (CHUYỂN sang gọi trực tiếp)
+//  Reminder: mỗi phút (CHUYỂN sang gọi trực tiếp)
 cron.schedule("* * * * *", async () => {
   console.log(`🔔 Process reminders @ ${new Date().toLocaleString()}`);
   await processReminders(); // chạy trực tiếp trong main process, có access socket
+});
+
+cron.schedule("0 2 * * *", () => {
+  console.log(`⏳ Skipping expired stages @ ${new Date().toLocaleString()}`);
+  exec("node cron/markSkippedStages.js", (error, stdout, stderr) => {
+    if (stdout) console.log(stdout);
+    if (stderr) console.error(stderr);
+    if (error) console.error("❌ markSkippedStages error:", error.message);
+  });
 });
