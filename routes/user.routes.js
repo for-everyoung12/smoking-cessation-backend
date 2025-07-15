@@ -3,7 +3,9 @@ const router = express.Router();
 const userController = require('../controllers/user.controller');
 const authenticateToken = require('../middlewares/auth.middleware');
 const { isAdmin } = require('../middlewares/role.middleware');
-
+const multer = require("multer");
+const { storage } = require("../utils/cloudinary");
+const upload = multer({ storage });
 /**
  * @swagger
  * tags:
@@ -47,14 +49,14 @@ router.get('/me', authenticateToken, userController.getCurrentUser);
  * @swagger
  * /api/users/me:
  *   put:
- *     summary: Update current user's profile
+ *     summary: Update current user's profile (with avatar upload)
  *     tags: [Users]
  *     security:
  *       - bearerAuth: []
  *     requestBody:
  *       required: true
  *       content:
- *         application/json:
+ *         multipart/form-data:
  *           schema:
  *             type: object
  *             properties:
@@ -62,13 +64,23 @@ router.get('/me', authenticateToken, userController.getCurrentUser);
  *                 type: string
  *               birth_date:
  *                 type: string
+ *                 format: date
  *               gender:
  *                 type: string
+ *                 enum: [male, female, other]
+ *               avatar:
+ *                 type: string
+ *                 format: binary
  *     responses:
  *       200:
- *         description: User updated
+ *         description: User updated successfully
+ *       400:
+ *         description: Invalid input or file
+ *       500:
+ *         description: Server error
  */
-router.put('/me', authenticateToken, userController.updateCurrentUser);
+router.put('/me', authenticateToken, upload.single('avatar'), userController.updateCurrentUser);
+
 
 /**
  * @swagger
