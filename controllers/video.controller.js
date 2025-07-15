@@ -1,6 +1,6 @@
 const { upsertStreamUser, generateStreamToken } = require("../lib/streamVideo");
 const User = require("../models/user.model");
-const { generateJitsiJwt } = require("../lib/jitsiJwt");
+// const { generateJitsiJwt } = require("../lib/jitsiJwt");
 
 const createStreamUser = async (req, res) => {
   try {
