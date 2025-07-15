@@ -7,6 +7,7 @@ const userSchema = new mongoose.Schema({
   full_name: String,
   birth_date: Date,
   gender: String,
+  avatar:  String ,
   role: { type: String, enum: ['member', 'coach', 'admin'] },
   created_at: { type: Date, default: Date.now },
   emailVerificationToken: String,

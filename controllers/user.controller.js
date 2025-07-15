@@ -4,6 +4,9 @@ const UserMembership = require('../models/userMembership.model');
 const MembershipPackage = require('../models/membershipPackage.model');
 const QuitPlan = require('../models/quitPlan.model');
 
+const multer = require('multer');
+const { storage } = require('../utils/cloudinary');
+const upload = multer({ storage });
 exports.getUserQuitPlans = async (req, res) => {
   try {
     const plans = await QuitPlan.find({ user_id: req.params.id });
@@ -49,16 +52,26 @@ exports.getCurrentUser = async (req, res) => {
 exports.updateCurrentUser = async (req, res) => {
   try {
     const { full_name, birth_date, gender } = req.body;
+    const updateFields = { full_name, birth_date, gender };
+
+    if (req.file) {
+      updateFields.avatar = req.file.path; // Cloudinary URL
+    }
+
     const user = await User.findByIdAndUpdate(
       req.user.id,
-      { full_name, birth_date, gender },
+      updateFields,
       { new: true }
-    ).select('-password');
+    ).select("-password");
+
     res.json(user);
   } catch (error) {
-    res.status(500).json({ error: 'Update failed' });
+    console.error("Update failed:");
+    console.dir(error, { depth: null });
+    res.status(500).json({ error: error.message || "Update failed" });
   }
 };
+
 // controller
 exports.deleteUser = async (req, res) => {
   try {
@@ -68,8 +81,6 @@ exports.deleteUser = async (req, res) => {
     res.status(500).json({ error: 'Deletion failed' });
   }
 };
-
-
 
 exports.getUserCoach = async (req, res) => {
   try {
@@ -82,8 +93,6 @@ exports.getUserCoach = async (req, res) => {
     res.status(500).json({ message: 'Server error' });
   }
 };
-
-
 
 exports.getUserMembership = async (req, res) => {
   try {
