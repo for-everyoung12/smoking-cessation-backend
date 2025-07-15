@@ -1,7 +1,7 @@
 const express = require("express");
 const authenticateToken = require("../middlewares/auth.middleware");
 const { createStreamUser, getStreamToken,getJitsiRoomLink  } = require("../controllers/video.controller");
-const { getJitsiJwt } = require("../controllers/video.controller");
+// const { getJitsiJwt } = require("../controllers/video.controller");
 const coachUserController = require("../controllers/coachUser.controller");
 
 const router = express.Router();
@@ -77,43 +77,43 @@ router.get("/token", authenticateToken, getStreamToken);
  */
 router.get('/room/:coachId/:memberId', getJitsiRoomLink);
 
-/**
- * @swagger
- * /api/video/jwt:
- *   post:
- *     summary: Lấy JWT cho Jitsi
- *     tags:
- *       - Video
- *     requestBody:
- *       required: true
- *       content:
- *         application/json:
- *           schema:
- *             type: object
- *             required: [room, userId, userName]
- *             properties:
- *               room:
- *                 type: string
- *               userId:
- *                 type: string
- *               userName:
- *                 type: string
- *     responses:
- *       200:
- *         description: JWT token
- *         content:
- *           application/json:
- *             schema:
- *               type: object
- *               properties:
- *                 token:
- *                   type: string
- *       400:
- *         description: Thiếu tham số
- *       500:
- *         description: Lỗi server
- */
-router.post('/jwt', getJitsiJwt);
+// /**
+//  * @swagger
+//  * /api/video/jwt:
+//  *   post:
+//  *     summary: Lấy JWT cho Jitsi
+//  *     tags:
+//  *       - Video
+//  *     requestBody:
+//  *       required: true
+//  *       content:
+//  *         application/json:
+//  *           schema:
+//  *             type: object
+//  *             required: [room, userId, userName]
+//  *             properties:
+//  *               room:
+//  *                 type: string
+//  *               userId:
+//  *                 type: string
+//  *               userName:
+//  *                 type: string
+//  *     responses:
+//  *       200:
+//  *         description: JWT token
+//  *         content:
+//  *           application/json:
+//  *             schema:
+//  *               type: object
+//  *               properties:
+//  *                 token:
+//  *                   type: string
+//  *       400:
+//  *         description: Thiếu tham số
+//  *       500:
+//  *         description: Lỗi server
+//  */
+// router.post('/jwt', getJitsiJwt);
 
 /**
  * @swagger
