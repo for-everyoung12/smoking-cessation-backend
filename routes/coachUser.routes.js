@@ -127,4 +127,35 @@ router.patch('/:id', authenticateToken, isCoach, coachUserController.updateCoach
  */
 router.delete('/:id', authenticateToken, isCoach, coachUserController.deleteCoachUser);
 
+/**
+ * @swagger
+ * /api/coach-user/coach-of-user/{userId}:
+ *   get:
+ *     summary: Lấy thông tin coach của một user
+ *     tags:
+ *       - CoachUser
+ *     parameters:
+ *       - in: path
+ *         name: userId
+ *         required: true
+ *         schema:
+ *           type: string
+ *         description: ID của user
+ *     responses:
+ *       200:
+ *         description: Thông tin coach của user
+ *         content:
+ *           application/json:
+ *             schema:
+ *               type: object
+ *               properties:
+ *                 coach:
+ *                   type: object
+ *                   description: Thông tin coach (tùy theo cấu trúc trả về thực tế)
+ *       404:
+ *         description: Không tìm thấy user hoặc coach
+ *       500:
+ *         description: Lỗi server
+ */
+router.get('/coach-of-user/:userId', coachUserController.getCoachByUserId);
 module.exports = router;

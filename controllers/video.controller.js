@@ -1,5 +1,6 @@
 const { upsertStreamUser, generateStreamToken } = require("../lib/streamVideo");
 const User = require("../models/user.model");
+const { generateJitsiJwt } = require("../lib/jitsiJwt");
 
 const createStreamUser = async (req, res) => {
   try {
@@ -27,7 +28,21 @@ const getStreamToken = (req, res) => {
   }
 };
 
+const getJitsiRoomLink = async (req, res) => {
+  const { coachId, memberId } = req.params;
+  // Lấy 4 ký tự cuối, chỉ gồm chữ và số
+  const shortCoach = String(coachId).replace(/[^a-zA-Z0-9]/g, '').slice(-4);
+  const shortMember = String(memberId).replace(/[^a-zA-Z0-9]/g, '').slice(-4);
+  const roomName = `c${shortCoach}m${shortMember}`.toLowerCase(); // không dấu cách, không viết hoa
+  const roomUrl = `https://meet.jit.si/${roomName}`;
+  res.json({ roomUrl });
+};
+
+
+
 module.exports = {
   createStreamUser,
-  getStreamToken
+  getStreamToken, 
+  getJitsiRoomLink, // <-- thêm dòng này
+
 };
