@@ -3,6 +3,10 @@ const UserMembership = require("../models/userMembership.model");
 const checkMembershipPermission = (permissionField) => {
   return async (req, res, next) => {
     try {
+      if (req.user?.role === "admin") {
+        return next();
+      }
+
       const membership = await UserMembership.findOne({
         user_id: req.user.id,
         status: "active",

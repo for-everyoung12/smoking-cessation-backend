@@ -5,6 +5,11 @@ function setSocketIO(socketIOInstance) {
   io = socketIOInstance;
 }
 
+function getSocketIO() {
+  if (!io) throw new Error('Socket.IO instance not set');
+  return io;
+}
+
 async function sendNotification(userId, title, content, type = 'system') {
   if (!io) throw new Error('Socket.IO instance not set in notify.js');
 
@@ -20,4 +25,8 @@ async function sendNotification(userId, title, content, type = 'system') {
   io.to(userId.toString()).emit('newNotification', noti);
 }
 
-module.exports = { sendNotification, setSocketIO };
+module.exports = {
+  sendNotification,
+  setSocketIO,
+  getSocketIO 
+};

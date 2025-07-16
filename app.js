@@ -74,7 +74,7 @@ const adminDashboardRoutes = require('./routes/adminDashboard.routes');
 app.use('/api/admin', adminDashboardRoutes);
 
 const reminderRoutes = require('./routes/reminder.routes');
-app.use('/api/reminder', reminderRoutes);
+app.use('/api/reminders', reminderRoutes);
 
 const notificationRoutes = require('./routes/notification.routes');
 app.use('/api/notifications', notificationRoutes);

@@ -4,7 +4,6 @@ function setupNotificationSocket(io, socket) {
   socket.on("join", (userId) => {
     if (userId) {
       socket.join(userId);
-      console.log(`[Socket] User ${userId} joined`);
     }
   });
 

@@ -20,7 +20,6 @@ function setupSocket(server) {
 
   // Còn thằng này thì vẫn cần socket riêng vì dùng .on()
   io.on("connection", (socket) => {
-    console.log("[Socket] Client connected");
 
     setupNotificationSocket(io, socket);
 

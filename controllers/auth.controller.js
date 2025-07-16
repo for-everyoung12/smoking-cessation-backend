@@ -9,7 +9,6 @@ const UserMembership = require('../models/userMembership.model');
 const JWT_SECRET = process.env.JWT_SECRET;
 const FRONTEND_URL = process.env.FRONTEND_URL;
 
-
 // Giao diện email HTML
 const generateVerificationEmail = (username, verificationUrl) => `
   <div style="font-family:Arial,sans-serif;max-width:600px;margin:auto;padding:20px;border:1px solid #ddd;border-radius:10px;">
@@ -73,6 +72,7 @@ exports.register = async (req, res) => {
     }
 
     const verificationUrl = `${FRONTEND_URL}/verify-email?token=${emailToken}`;
+    console.log('[verificationUrl]', verificationUrl); 
     await sendEmail(email, 'Verify your email', generateVerificationEmail(username || email, verificationUrl));
 
     res.status(201).json({ message: 'Registered. Please check your email to verify.' });
