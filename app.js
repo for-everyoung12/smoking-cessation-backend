@@ -94,9 +94,15 @@ app.use('/api/chat', chatRoutes);
 const blogRoutes = require('./routes/blog.routes');
 app.use('/api/blogs', blogRoutes);
 
+// Comment routes
+const commentRoutes = require('./routes/comment.routes');
+app.use('/api', commentRoutes);
+
 // Video routes
 const videoRoutes = require('./routes/video.routes');
 app.use('/api/video', videoRoutes);
+
+
 
 require('./models/user.model');
 require('./models/quitPlan.model');

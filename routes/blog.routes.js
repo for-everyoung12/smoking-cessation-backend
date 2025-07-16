@@ -1,13 +1,20 @@
-const express = require('express');
+const express = require("express");
 const router = express.Router();
-const blogController = require('../controllers/blog.controller');
-const authenticateToken = require('../middlewares/auth.middleware');
+const blogController = require("../controllers/blog.controller");
+const authenticateToken = require("../middlewares/auth.middleware");
+const authOrGuest = require("../middlewares/authOrGuest");
+/**
+ * @swagger
+ * tags:
+ *   name: Blogs
+ *   description: APIs quản lý blog chia sẻ
+ */
 
 /**
  * @swagger
- * /blogs:
+ * /api/blogs:
  *   post:
- *     summary: Create a new blog post
+ *     summary: Tạo blog mới
  *     tags: [Blogs]
  *     security:
  *       - bearerAuth: []
@@ -17,6 +24,7 @@ const authenticateToken = require('../middlewares/auth.middleware');
  *         application/json:
  *           schema:
  *             type: object
+ *             required: [title, content]
  *             properties:
  *               title:
  *                 type: string
@@ -30,40 +38,42 @@ const authenticateToken = require('../middlewares/auth.middleware');
  *       201:
  *         description: Blog created
  *       400:
- *         description: Validation error
+ *         description: Thiếu dữ liệu
  *       500:
- *         description: Server error
+ *         description: Lỗi server
  */
-router.post('/blogs', authenticateToken, blogController.createBlog);
+router.post("/", authenticateToken, blogController.createBlog);
 
 /**
  * @swagger
- * /blogs:
+ * /api/blogs:
  *   get:
- *     summary: Get list of blogs
+ *     summary: Lấy danh sách blog
  *     tags: [Blogs]
  *     parameters:
  *       - in: query
  *         name: page
  *         schema:
  *           type: integer
+ *         description: Trang hiện tại
  *       - in: query
  *         name: limit
  *         schema:
  *           type: integer
+ *         description: Số blog mỗi trang
  *     responses:
  *       200:
- *         description: List of blogs
+ *         description: Danh sách blog
  *       500:
- *         description: Server error
+ *         description: Lỗi server
  */
-router.get('/blogs', blogController.getBlogs);
+router.get("/", authOrGuest, blogController.getBlogs);
 
 /**
  * @swagger
- * /blogs/{id}:
+ * /api/blogs/{id}:
  *   get:
- *     summary: Get blog detail
+ *     summary: Lấy chi tiết blog
  *     tags: [Blogs]
  *     parameters:
  *       - in: path
@@ -73,19 +83,19 @@ router.get('/blogs', blogController.getBlogs);
  *           type: string
  *     responses:
  *       200:
- *         description: Blog detail
+ *         description: Chi tiết blog
  *       404:
- *         description: Blog not found
+ *         description: Không tìm thấy
  *       500:
- *         description: Server error
+ *         description: Lỗi server
  */
-router.get('/blogs/:id', blogController.getBlogById);
+router.get("/:id",authOrGuest, blogController.getBlogById);
 
 /**
  * @swagger
- * /blogs/{id}:
+ * /api/blogs/{id}:
  *   put:
- *     summary: Update a blog post
+ *     summary: Cập nhật blog
  *     tags: [Blogs]
  *     security:
  *       - bearerAuth: []
@@ -108,21 +118,19 @@ router.get('/blogs/:id', blogController.getBlogById);
  *                 type: string
  *     responses:
  *       200:
- *         description: Blog updated
+ *         description: Cập nhật thành công
  *       403:
- *         description: Not authorized
+ *         description: Không có quyền
  *       404:
- *         description: Blog not found
- *       500:
- *         description: Server error
+ *         description: Không tìm thấy
  */
-router.put('/blogs/:id', authenticateToken, blogController.updateBlog);
+router.put("/:id", authenticateToken, blogController.updateBlog);
 
 /**
  * @swagger
- * /blogs/{id}:
+ * /api/blogs/{id}:
  *   delete:
- *     summary: Delete a blog post
+ *     summary: Xoá blog
  *     tags: [Blogs]
  *     security:
  *       - bearerAuth: []
@@ -134,21 +142,19 @@ router.put('/blogs/:id', authenticateToken, blogController.updateBlog);
  *           type: string
  *     responses:
  *       200:
- *         description: Blog deleted
+ *         description: Đã xoá
  *       403:
- *         description: Not authorized
+ *         description: Không có quyền
  *       404:
- *         description: Blog not found
- *       500:
- *         description: Server error
+ *         description: Không tìm thấy
  */
-router.delete('/blogs/:id', authenticateToken, blogController.deleteBlog);
+router.delete("/:id", authenticateToken, blogController.deleteBlog);
 
 /**
  * @swagger
- * /blogs/{id}/like:
+ * /api/blogs/{id}/like:
  *   post:
- *     summary: Like a blog
+ *     summary: Like blog
  *     tags: [Blogs]
  *     security:
  *       - bearerAuth: []
@@ -160,21 +166,19 @@ router.delete('/blogs/:id', authenticateToken, blogController.deleteBlog);
  *           type: string
  *     responses:
  *       200:
- *         description: Blog liked
+ *         description: Đã like
  *       400:
- *         description: Already liked
+ *         description: Đã like trước đó
  *       404:
- *         description: Blog not found
- *       500:
- *         description: Server error
+ *         description: Không tìm thấy blog
  */
-router.post('/blogs/:id/like', authenticateToken, blogController.likeBlog);
+router.post("/:id/like", authenticateToken, blogController.likeBlog);
 
 /**
  * @swagger
- * /blogs/{id}/unlike:
+ * /api/blogs/{id}/unlike:
  *   post:
- *     summary: Unlike a blog
+ *     summary: Unlike blog
  *     tags: [Blogs]
  *     security:
  *       - bearerAuth: []
@@ -186,19 +190,17 @@ router.post('/blogs/:id/like', authenticateToken, blogController.likeBlog);
  *           type: string
  *     responses:
  *       200:
- *         description: Blog unliked
+ *         description: Đã unlike
  *       404:
- *         description: Blog not found
- *       500:
- *         description: Server error
+ *         description: Không tìm thấy blog
  */
-router.post('/blogs/:id/unlike', authenticateToken, blogController.unlikeBlog);
+router.post("/:id/unlike", authenticateToken, blogController.unlikeBlog);
 
 /**
  * @swagger
- * /blogs/{id}/share-badges:
+ * /api/blogs/{id}/share-badges:
  *   post:
- *     summary: Share badges in a blog
+ *     summary: Chia sẻ huy hiệu
  *     tags: [Blogs]
  *     security:
  *       - bearerAuth: []
@@ -221,16 +223,14 @@ router.post('/blogs/:id/unlike', authenticateToken, blogController.unlikeBlog);
  *                   type: string
  *     responses:
  *       200:
- *         description: Badges shared successfully
+ *         description: Thành công
  *       400:
- *         description: Validation error
+ *         description: Dữ liệu không hợp lệ
  *       403:
- *         description: Not authorized
+ *         description: Không có quyền
  *       404:
- *         description: Blog not found
- *       500:
- *         description: Server error
+ *         description: Không tìm thấy blog
  */
-router.post('/blogs/:id/share-badges', authenticateToken, blogController.shareBadges);
+router.post("/:id/share-badges", authenticateToken, blogController.shareBadges);
 
 module.exports = router;
