@@ -44,21 +44,45 @@ exports.getBlogs = async (req, res) => {
       .sort({ published_at: -1 })
       .skip(skip)
       .limit(limit)
-      .populate('author_id', 'full_name') 
+      .populate('author_id', 'full_name')
       .populate('shared_badges');
 
     const total = await Blog.countDocuments();
+
+    console.log("📦 Total blogs in DB:", blogs.length);
+
+    const blogsWithExtras = await Promise.all(
+      blogs.map(async (blog) => {
+        const blogObj = blog.toObject();
+
+        const isLikedByMe =
+          req.user && Array.isArray(blogObj.likes)
+            ? blogObj.likes.some(uid => uid.toString() === req.user.id)
+            : false;
+
+        const commentCount = await Comment.countDocuments({ blog_id: blog._id });
+
+        return {
+          ...blogObj,
+          isLikedByMe,
+          likeCount: blogObj.likes?.length || 0,
+          commentCount
+        };
+      })
+    );
 
     res.json({
       total,
       page,
       pages: Math.ceil(total / limit),
-      blogs
+      blogs: blogsWithExtras
     });
   } catch (err) {
+    console.error("🔥 getBlogs error:", err);
     res.status(500).json({ message: err.message });
   }
 };
+
 
 // Lấy chi tiết blog
 exports.getBlogById = async (req, res) => {
@@ -71,8 +95,14 @@ exports.getBlogById = async (req, res) => {
 
     const commentCount = await Comment.countDocuments({ blog_id: blog._id });
 
+    const isLikedByMe = req.user && blog.likes.some(uid => uid.toString() === req.user.id);
+    const blogObj = blog.toObject();
+
     res.json({
-      blog,
+      blog: {
+        ...blogObj,
+        isLikedByMe
+      },
       likeCount: blog.likes.length,
       commentCount
     });
@@ -80,6 +110,7 @@ exports.getBlogById = async (req, res) => {
     res.status(500).json({ message: err.message });
   }
 };
+
 
 // Like blog
 exports.likeBlog = async (req, res) => {
