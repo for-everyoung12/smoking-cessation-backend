@@ -4,7 +4,7 @@ const QuitStage = require('../models/quitStage.model');
 const ProgressTracking = require('../models/progressTracking.model');
 const SmokingStatus = require('../models/smokingStatus.model');
 const { sendNotification } = require('../utils/notify');
-
+const CoachUser = require("../models/coachUser.model");
 // Helper function to create default quit stages
 function generateSuggestedStages(status) {
   const { cigarette_count = 0, suction_frequency = "medium" } = status;
@@ -197,6 +197,19 @@ exports.createQuitPlan = async (req, res) => {
       status: 'ongoing',
       note
     });
+    
+    if (allowCoach && coach_user_id) {
+      const coachLink = await CoachUser.findOneAndUpdate(
+        { user_id: req.user.id },
+        {
+          coach_id: coach_user_id,
+          user_id: req.user.id,
+          created_at: new Date(),
+          status: 'active'
+        },
+        { upsert: true, new: true }
+      );
+    }
 
     const createdStages = await createSuggestedStages(
       newPlan._id,
