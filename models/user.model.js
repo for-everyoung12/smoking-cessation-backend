@@ -13,7 +13,16 @@ const userSchema = new mongoose.Schema({
   emailVerificationToken: String,
   isEmailVerified: { type: Boolean, default: false },
   resetPasswordToken: String,
-  resetPasswordExpire: Date
+  resetPasswordExpire: Date,
+
+  max_users: {
+    type: Number,
+    default: 10,
+  },
+  current_users: {
+    type: Number,
+    default: 0
+  }
 });
 
 const User = mongoose.model('User', userSchema);

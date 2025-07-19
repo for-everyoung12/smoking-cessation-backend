@@ -4,6 +4,7 @@ const QuitStage = require('../models/quitStage.model');
 const ProgressTracking = require('../models/progressTracking.model');
 const SmokingStatus = require('../models/smokingStatus.model');
 const { sendNotification } = require('../utils/notify');
+const User = require('../models/user.model');
 const CoachUser = require("../models/coachUser.model");
 // Helper function to create default quit stages
 function generateSuggestedStages(status) {
@@ -150,28 +151,28 @@ async function createSuggestedStages(planId, startDate, userId) {
   );
 }
 
-
-
-
 // Main controller
 exports.createQuitPlan = async (req, res) => {
   try {
     const { coach_user_id, goal, start_date, note } = req.body;
 
+    // Kiểm tra membership
     const membership = await UserMembership.findOne({
       user_id: req.user.id,
       status: 'active'
     }).populate('package_id');
 
     if (!membership || !membership.package_id?.can_use_quitplan) {
-      return res.status(403).json({ message: 'Your membership plan does not allow creating a quit plan.' });
+      return res.status(403).json({ message: 'Your membership does not allow quit plan creation.' });
     }
 
     const allowCoach = membership.package_id?.can_assign_coach;
+
     if (coach_user_id && !allowCoach) {
-      return res.status(403).json({ message: 'Your membership plan does not allow assigning a coach.' });
+      return res.status(403).json({ message: 'Your membership does not allow coach assignment.' });
     }
 
+    // Kiểm tra kế hoạch đang tồn tại
     const existingPlan = await QuitPlan.findOne({
       user_id: req.user.id,
       status: { $in: ['ongoing', 'pending'] }
@@ -185,10 +186,9 @@ exports.createQuitPlan = async (req, res) => {
     if (isNaN(selectedDate.getTime())) {
       return res.status(400).json({ message: 'Invalid start_date format.' });
     }
-
-    // Reset giờ về 00:00 giờ VN
     selectedDate.setHours(0, 0, 0, 0);
 
+    // Tạo kế hoạch
     const newPlan = await QuitPlan.create({
       user_id: req.user.id,
       coach_user_id: allowCoach ? coach_user_id : null,
@@ -197,30 +197,39 @@ exports.createQuitPlan = async (req, res) => {
       status: 'ongoing',
       note
     });
-    
+
+    // Nếu có gán coach → kiểm tra + tạo CoachUser
     if (allowCoach && coach_user_id) {
-      const coachLink = await CoachUser.findOneAndUpdate(
-        { user_id: req.user.id },
-        {
+      const coach = await User.findById(coach_user_id);
+      if (!coach || coach.role !== 'coach') {
+        return res.status(404).json({ message: 'Invalid coach selected' });
+      }
+
+      if (coach.current_users >= coach.max_users) {
+        return res.status(400).json({ message: 'Coach has reached maximum number of users' });
+      }
+
+      const exists = await CoachUser.findOne({ coach_id: coach_user_id, user_id: req.user.id });
+      if (!exists) {
+        await CoachUser.create({
           coach_id: coach_user_id,
           user_id: req.user.id,
-          created_at: new Date(),
-          status: 'active'
-        },
-        { upsert: true, new: true }
-      );
+          status: 'active',
+          created_at: new Date()
+        });
+        coach.current_users += 1;
+        await coach.save();
+      }
     }
 
-    const createdStages = await createSuggestedStages(
-      newPlan._id,
-      selectedDate.toISOString(),
-      req.user.id
-    );
+    // Tạo các stage
+    const createdStages = await createSuggestedStages(newPlan._id, selectedDate, req.user.id);
 
+    // Gửi thông báo
     await sendNotification(
       req.user.id,
-      " Quit plan created",
-      `You have created a plan "${goal}" starting from ${selectedDate.toLocaleDateString('vi-VN')}. Keep it up!`,
+      "Quit plan created",
+      `You have created a plan "${goal}" starting from ${selectedDate.toLocaleDateString('vi-VN')}`,
       "quitplan"
     );
 
@@ -235,8 +244,6 @@ exports.createQuitPlan = async (req, res) => {
     return res.status(500).json({ message: 'Failed to create quit plan.' });
   }
 };
-
-
 
 
 exports.getUserQuitPlans = async (req, res) => {
