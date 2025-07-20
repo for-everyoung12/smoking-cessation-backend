@@ -154,7 +154,8 @@ async function createSuggestedStages(planId, startDate, userId) {
 // Main controller
 exports.createQuitPlan = async (req, res) => {
   try {
-    const { coach_user_id, goal, start_date, note } = req.body;
+    const { coach_user_id, goal, start_date, note, reasons, reasons_detail } = req.body;
+
 
     // Kiểm tra membership
     const membership = await UserMembership.findOne({
@@ -195,7 +196,9 @@ exports.createQuitPlan = async (req, res) => {
       goal,
       start_date: selectedDate,
       status: 'ongoing',
-      note
+      note,
+      reasons: reasons || [],              
+      reasons_detail: reasons_detail || '' 
     });
 
     // Nếu có gán coach → kiểm tra + tạo CoachUser
