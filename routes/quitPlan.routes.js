@@ -65,17 +65,30 @@ quitPlanRoutes.get(
  *         application/json:
  *           schema:
  *             type: object
+ *             required:
+ *               - goal
+ *               - start_date
  *             properties:
  *               goal:
  *                 type: string
+ *                 example: "Quit smoking in 30 days"
  *               start_date:
  *                 type: string
  *                 format: date
+ *                 example: "2025-07-20"
  *               note:
  *                 type: string
  *               coach_user_id:
  *                 type: string
  *                 description: Optional coach ID (requires `can_assign_coach`)
+ *               reasons:
+ *                 type: array
+ *                 items:
+ *                   type: string
+ *                 description: Main reasons user wants to quit
+ *               reasons_detail:
+ *                 type: string
+ *                 description: Additional details about motivationx`
  *     responses:
  *       201:
  *         description: Quit plan created successfully
@@ -86,6 +99,7 @@ quitPlanRoutes.get(
  *               properties:
  *                 message:
  *                   type: string
+ *                   example: Quit plan created successfully.
  *                 plan:
  *                   $ref: '#/components/schemas/QuitPlan'
  *                 stages:
@@ -95,7 +109,9 @@ quitPlanRoutes.get(
  *       403:
  *         description: User is not permitted to create quit plan
  *       409:
- *         description: User already has an active plan
+ *         description: User already has an active quit plan
+ *       400:
+ *         description: Invalid input (e.g., bad start date)
  *       500:
  *         description: Failed to create quit plan
  */

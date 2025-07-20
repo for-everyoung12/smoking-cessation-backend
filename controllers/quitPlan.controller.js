@@ -156,7 +156,8 @@ async function createSuggestedStages(planId, startDate, userId) {
 // Main controller
 exports.createQuitPlan = async (req, res) => {
   try {
-    const { coach_user_id, goal, start_date, note } = req.body;
+    const { coach_user_id, goal, start_date, note, reasons, reasons_detail } = req.body;
+
 
     const membership = await UserMembership.findOne({
       user_id: req.user.id,
@@ -195,7 +196,9 @@ exports.createQuitPlan = async (req, res) => {
       goal,
       start_date: selectedDate,
       status: 'ongoing',
-      note
+      note,
+      reasons: reasons || [],              
+      reasons_detail: reasons_detail || '' 
     });
     
     if (allowCoach && coach_user_id) {
