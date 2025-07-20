@@ -72,7 +72,7 @@ exports.register = async (req, res) => {
     }
 
     const verificationUrl = `${FRONTEND_URL}/verify-email?token=${emailToken}`;
-    console.log('[verificationUrl]', verificationUrl); 
+    console.log('[verificationUrl]', verificationUrl);
     await sendEmail(email, 'Verify your email', generateVerificationEmail(username || email, verificationUrl));
 
     res.status(201).json({ message: 'Registered. Please check your email to verify.' });
@@ -239,7 +239,9 @@ exports.inviteCoach = async (req, res) => {
       email,
       role: 'coach',
       isEmailVerified: false,
-      emailVerificationToken: inviteToken
+      emailVerificationToken: inviteToken,
+      max_users: 10,
+      current_users: 0
     });
 
     const inviteUrl = `${FRONTEND_URL}/coach-invite/confirm?token=${inviteToken}`;
