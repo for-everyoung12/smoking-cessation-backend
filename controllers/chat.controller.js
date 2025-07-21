@@ -7,52 +7,49 @@ const User = require("../models/user.model");
 exports.getOrCreateSession = async (req, res) => {
   try {
     const userId = req.user.id;
+    console.log("[DEBUG] User ID from token:", userId); // 👈 Log ID từ token
 
-    // Kiểm tra session đang mở
-    let session = await ChatSession.findOne({ user_id: userId, status: 'open' })
-      .populate('coach_id', 'full_name');
-
-    if (session) {
-      return res.status(200).json({ success: true, data: session });
-    }
-
-    const quitPlan = await QuitPlan.findOne({ user_id: userId, status: 'ongoing' });
-    if (!quitPlan || !quitPlan.coach_user_id) {
-      return res.status(400).json({
-        success: false,
-        message: 'Bạn cần có quit plan đang hoạt động và đã chọn coach để bắt đầu chat.'
-      });
-    }
-
-    const coach = await User.findById(quitPlan.coach_user_id);
-    if (!coach || coach.role !== 'coach') {
-      return res.status(404).json({ success: false, message: 'Không tìm thấy coach đã gán' });
-    }
-
-    // Tạo session
-    session = await ChatSession.create({
+    // 1. Tìm coach đang active với user
+    const activeCoachRel = await CoachUser.findOne({
       user_id: userId,
-      coach_id: coach._id,
-      created_at: new Date(),
-      status: 'open',
-      last_active_at: new Date()
+      status: 'active'
     });
+    console.log("[DEBUG] Found coachUser:", activeCoachRel); // 👈 Log quan hệ coach-user
 
-    // Ghi nhận quan hệ coach-user
-    await CoachUser.findOneAndUpdate(
-      { user_id: userId, coach_id: coach._id },
-      { status: 'active', created_at: new Date() },
-      { upsert: true }
-    );
+    if (!activeCoachRel) {
+      return res.status(404).json({ message: 'Bạn chưa có coach đang hoạt động.' });
+    }
 
-    session = await ChatSession.findById(session._id).populate('coach_id', 'full_name');
+    const coachId = activeCoachRel.coach_id;
+    console.log("[DEBUG] Coach ID:", coachId); // 👈 Log coachId
 
-    return res.status(201).json({ success: true, data: session });
+    // 2. Tìm session giữa user và coach này
+    let session = await ChatSession.findOne({
+      user_id: userId,
+      coach_id: coachId
+    }).populate('coach_id', 'full_name');
+    console.log("[DEBUG] Found existing session:", session); // 👈 Log session nếu có
+
+    // 3. Nếu chưa có → tạo mới
+    if (!session) {
+      session = await ChatSession.create({
+        user_id: userId,
+        coach_id: coachId,
+        last_active_at: new Date()
+      });
+
+      // populate lại sau khi tạo
+      await session.populate('coach_id', 'full_name');
+      console.log("[DEBUG] Created new session:", session); // 👈 Log session sau khi tạo
+    }
+
+    res.json({ data: session });
   } catch (err) {
     console.error('[getOrCreateSession]', err);
-    return res.status(500).json({ success: false, message: 'Không thể tạo hoặc lấy session' });
+    res.status(500).json({ message: 'Lỗi khi lấy phiên trò chuyện' });
   }
 };
+
 
 exports.getSessionsByCoach = async (req, res) => {
   try {
