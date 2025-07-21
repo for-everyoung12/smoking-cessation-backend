@@ -9,4 +9,4 @@ const coachMessageSchema = new mongoose.Schema({
 });
 
 const coachMessage = mongoose.model('CoachMessage', coachMessageSchema);
-module.exports = coachMessage;
+module.exports = coachMessage;  
