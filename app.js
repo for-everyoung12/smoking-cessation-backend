@@ -82,6 +82,9 @@ app.use('/api/notifications', notificationRoutes);
 require('./models/notification.model')
 require('./models/reminder.model')
 require('./models/activityLog.model')
+require('./utils/dailyMotivationJob');
+require('./utils/dailyReminderJob');
+
 //Community routes
 const communityMessageRoutes = require('./routes/communityMessage.routes');
 app.use('/api/community', communityMessageRoutes);
