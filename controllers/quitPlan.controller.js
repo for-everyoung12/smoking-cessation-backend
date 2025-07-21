@@ -4,7 +4,7 @@ const QuitStage = require('../models/quitStage.model');
 const ProgressTracking = require('../models/progressTracking.model');
 const SmokingStatus = require('../models/smokingStatus.model');
 const { sendNotification } = require('../utils/notify');
-const User = require('../models/user.model');
+const User = require('../models/user.model'); 
 const CoachUser = require("../models/coachUser.model");
 // Helper function to create default quit stages
 function generateSuggestedStages(status) {
