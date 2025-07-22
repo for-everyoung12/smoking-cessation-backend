@@ -43,6 +43,8 @@ exports.createCoachUser = async (req, res) => {
   }
 };
 
+const QuitPlan = require('../models/quitPlan.model');
+
 exports.getCoachUsers = async (req, res) => {
   try {
     const { coach_id, status } = req.query;
@@ -53,12 +55,39 @@ exports.getCoachUsers = async (req, res) => {
     const relations = await CoachUser.find(filter)
       .populate('coach_id', 'full_name email')
       .populate('user_id', 'full_name email');
-    res.json(relations);
+
+    // Lấy tất cả user_id (khác null)
+    const userIds = relations
+      .map(r => r.user_id?._id)
+      .filter(id => id); // loại bỏ null
+
+    // Lấy tất cả quitPlans liên quan
+    const quitPlans = await QuitPlan.find({ user_id: { $in: userIds } });
+
+    // Group quitPlans theo user_id
+    const quitPlanMap = {};
+    for (const plan of quitPlans) {
+      const uid = plan.user_id.toString();
+      if (!quitPlanMap[uid]) quitPlanMap[uid] = [];
+      quitPlanMap[uid].push(plan);
+    }
+
+    // Gắn quitPlans vào từng relation
+    const enriched = relations.map(rel => {
+      const uid = rel.user_id?._id?.toString();
+      return {
+        ...rel.toObject(),
+        quitPlans: uid ? quitPlanMap[uid] || [] : [],
+      };
+    });
+
+    res.json(enriched);
   } catch (error) {
     console.error('[getCoachUsers]', error);
     res.status(500).json({ message: 'Failed to fetch relations' });
   }
 };
+
 
 exports.updateCoachUser = async (req, res) => {
   try {
@@ -103,3 +132,52 @@ exports.getCoachByUserId = async (req, res) => {
   if (!mapping) return res.status(404).json({ message: "No coach found" });
   res.json({ coachId: mapping.coach_id });
 };
+
+const QuitStage = require('../models/quitStage.model');
+
+exports.getCoachUserById = async (req, res) => {
+  try {
+    const { id } = req.params;
+
+    const relation = await CoachUser.findById(id)
+      .populate('coach_id', 'full_name email')
+      .populate('user_id', 'full_name email');
+
+    if (!relation) {
+      return res.status(404).json({ message: 'Relation not found' });
+    }
+
+    // Lấy quitPlans
+    const quitPlans = await QuitPlan.find({ user_id: relation.user_id?._id });
+
+    // Lấy quitStages cho từng plan
+    const planIds = quitPlans.map((p) => p._id);
+    const quitStages = await QuitStage.find({ plan_id: { $in: planIds } });
+
+    // Gộp stage theo quitPlan
+    const stageMap = {};
+    for (const stage of quitStages) {
+      const pid = stage.plan_id.toString();
+      if (!stageMap[pid]) stageMap[pid] = [];
+      stageMap[pid].push(stage);
+    }
+
+    // Gắn stages vào mỗi plan
+    const enrichedPlans = quitPlans.map((plan) => {
+      const pid = plan._id.toString();
+      return {
+        ...plan.toObject(),
+        stages: stageMap[pid] || [],
+      };
+    });
+
+    res.json({
+      ...relation.toObject(),
+      quitPlans: enrichedPlans,
+    });
+  } catch (error) {
+    console.error('[getCoachUserById]', error);
+    res.status(500).json({ message: 'Failed to fetch relation detail' });
+  }
+};
+

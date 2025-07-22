@@ -129,33 +129,39 @@ router.delete('/:id', authenticateToken, isCoach, coachUserController.deleteCoac
 
 /**
  * @swagger
- * /api/coach-user/coach-of-user/{userId}:
+ * /api/coach-users/{id}:
  *   get:
- *     summary: Lấy thông tin coach của một user
- *     tags:
- *       - CoachUser
+ *     summary: Lấy chi tiết một coach-user relation
+ *     tags: [CoachUsers]
  *     parameters:
  *       - in: path
- *         name: userId
+ *         name: id
  *         required: true
  *         schema:
  *           type: string
- *         description: ID của user
+ *         description: ID của quan hệ coach-user
  *     responses:
  *       200:
- *         description: Thông tin coach của user
+ *         description: Thông tin chi tiết quan hệ coach-user
  *         content:
  *           application/json:
  *             schema:
  *               type: object
  *               properties:
- *                 coach:
+ *                 coach_id:
  *                   type: object
- *                   description: Thông tin coach (tùy theo cấu trúc trả về thực tế)
+ *                 user_id:
+ *                   type: object
+ *                 quitPlans:
+ *                   type: array
+ *                   items:
+ *                     type: object
  *       404:
- *         description: Không tìm thấy user hoặc coach
+ *         description: Không tìm thấy quan hệ
  *       500:
  *         description: Lỗi server
  */
-router.get('/coach-of-user/:userId', coachUserController.getCoachByUserId);
+
+router.get('/:id', coachUserController.getCoachUserById);
+
 module.exports = router;
