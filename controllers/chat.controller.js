@@ -35,7 +35,8 @@ exports.getOrCreateSession = async (req, res) => {
       session = await ChatSession.create({
         user_id: userId,
         coach_id: coachId,
-        last_active_at: new Date()
+        last_active_at: new Date(),
+        status: 'open',
       });
 
       // populate lại sau khi tạo
