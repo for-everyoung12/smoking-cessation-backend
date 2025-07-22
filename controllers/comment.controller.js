@@ -1,9 +1,9 @@
 const Comment = require('../models/comment.model');
 
-// Thêm bình luận mới
+// Tạo bình luận hoặc reply
 exports.createComment = async (req, res) => {
   try {
-    const { content } = req.body;
+    const { content, parent_comment_id = null } = req.body;
     const blog_id = req.params.id;
 
     if (!content) return res.status(400).json({ message: 'Content is required' });
@@ -11,7 +11,8 @@ exports.createComment = async (req, res) => {
     const comment = new Comment({
       blog_id,
       user_id: req.user.id,
-      content
+      content,
+      parent_comment_id
     });
 
     await comment.save();
@@ -21,25 +22,38 @@ exports.createComment = async (req, res) => {
   }
 };
 
-// Lấy danh sách bình luận theo blog
+// Trả về toàn bộ comment + reply theo blog_id, phân cấp luôn
 exports.getCommentsByBlog = async (req, res) => {
   try {
-    const { page = 1, limit = 10 } = req.query;
     const blog_id = req.params.id;
 
-    const comments = await Comment.find({ blog_id })
-      .sort({ created_at: -1 })
-      .skip((page - 1) * limit)
-      .limit(parseInt(limit))
+    // 1. Lấy tất cả comment của blog đó
+    const allComments = await Comment.find({ blog_id })
+      .sort({ created_at: 1 })
       .populate('user_id', 'full_name');
 
-    const total = await Comment.countDocuments({ blog_id });
+    // 2. Group phân cấp theo parent_comment_id
+    const commentMap = {};
+    const rootComments = [];
+
+    allComments.forEach(cmt => {
+      commentMap[cmt._id] = { ...cmt._doc, replies: [] };
+    });
+
+    allComments.forEach(cmt => {
+      if (cmt.parent_comment_id) {
+        const parent = commentMap[cmt.parent_comment_id];
+        if (parent) {
+          parent.replies.push(commentMap[cmt._id]);
+        }
+      } else {
+        rootComments.push(commentMap[cmt._id]);
+      }
+    });
 
     res.json({
-      total,
-      page,
-      pages: Math.ceil(total / limit),
-      comments
+      total: allComments.length,
+      comments: rootComments
     });
   } catch (err) {
     res.status(500).json({ message: err.message });
@@ -64,7 +78,7 @@ exports.likeComment = async (req, res) => {
   }
 };
 
-// Unlike bình luận
+// Unlike
 exports.unlikeComment = async (req, res) => {
   try {
     const comment = await Comment.findById(req.params.id);
@@ -78,7 +92,7 @@ exports.unlikeComment = async (req, res) => {
   }
 };
 
-// Cập nhật bình luận
+// Update
 exports.updateComment = async (req, res) => {
   try {
     const { content } = req.body;
@@ -97,7 +111,7 @@ exports.updateComment = async (req, res) => {
   }
 };
 
-// Xoá bình luận
+// Delete
 exports.deleteComment = async (req, res) => {
   try {
     const comment = await Comment.findById(req.params.id);
@@ -107,8 +121,44 @@ exports.deleteComment = async (req, res) => {
       return res.status(403).json({ message: 'Not authorized' });
     }
 
-    await comment.deleteOne();
-    res.json({ message: 'Comment deleted' });
+    // Optional: Xoá cả replies nếu cần
+    await Comment.deleteMany({
+      $or: [
+        { _id: comment._id },
+        { parent_comment_id: comment._id }
+      ]
+    });
+
+    res.json({ message: 'Comment and replies deleted' });
+  } catch (err) {
+    res.status(500).json({ message: err.message });
+  }
+};
+
+
+exports.replyToComment = async (req, res) => {
+  try {
+    const { content } = req.body;
+    const parent_comment_id = req.params.id;
+
+    if (!content) return res.status(400).json({ message: "Content is required" });
+
+    // Tìm comment cha để lấy blog_id
+    const parentComment = await Comment.findById(parent_comment_id);
+    if (!parentComment) {
+      return res.status(404).json({ message: "Parent comment not found" });
+    }
+
+    const reply = new Comment({
+      blog_id: parentComment.blog_id,
+      user_id: req.user.id,
+      content,
+      parent_comment_id
+    });
+
+    await reply.save();
+
+    res.status(201).json({ message: "Reply added", reply });
   } catch (err) {
     res.status(500).json({ message: err.message });
   }
