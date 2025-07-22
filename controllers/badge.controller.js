@@ -26,7 +26,7 @@ exports.getBadgeById = async (req, res) => {
 // Tạo badge mới và gán cho user
 exports.createBadge = async (req, res) => {
     try {
-        const userId = req.user?._id;
+        const userId = req.user.id;
         if (!userId) return res.status(401).json({ error: 'Unauthorized' });
 
         const { name, type, date, description, proOnly, condition } = req.body;

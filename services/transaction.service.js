@@ -24,3 +24,22 @@ exports.getAllTransactions = async () => {
     .populate('related_payment_id', 'payment_method amount status')
     .sort({ created_at: -1 });
 };
+exports.getAllTransactionSummary = async () => {
+  const transactions = await Transaction.find();
+
+  const summary = {
+    totalRevenue: 0,
+    success: 0,
+    pending: 0,
+    failed: 0
+  };
+
+  for (const tx of transactions) {
+    if (tx.status === 'success') {
+      summary.totalRevenue += tx.amount;
+    }
+    summary[tx.status] += 1;
+  }
+
+  return summary;
+};

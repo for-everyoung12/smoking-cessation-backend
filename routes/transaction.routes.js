@@ -39,5 +39,18 @@ router.get('/me', authenticateToken, controller.getMyTransactions);
  *         description: Danh sách giao dịch toàn hệ thống
  */
 router.get('/', authenticateToken, isAdmin, controller.getAllTransactions);
+/**
+ * @swagger
+ * /api/transactions/summary:
+ *   get:
+ *     summary: Thống kê giao dịch toàn hệ thống (admin)
+ *     tags: [Transactions]
+ *     security:
+ *       - bearerAuth: []
+ *     responses:
+ *       200:
+ *         description: Thống kê gồm tổng doanh thu và trạng thái giao dịch
+ */
+router.get('/summary', authenticateToken, isAdmin, controller.getTransactionSummary);
 
 module.exports = router;

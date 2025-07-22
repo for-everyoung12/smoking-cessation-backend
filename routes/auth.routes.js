@@ -1,8 +1,8 @@
 const express = require('express');
 const router = express.Router();
 const authController = require('../controllers/auth.controller');
-const authenticateToken = require('../middlewares/auth.middleware');
-const { isAdmin } = require('../middlewares/role.middleware');
+
+
 /**
  * @swagger
  * tags:
@@ -168,101 +168,5 @@ router.post('/forgot-password', authController.forgotPassword);
 router.post('/reset-password', authController.resetPassword);
 
 
-
-/**
- * @swagger
- * /api/auth/invite-coach:
- *   post:
- *     tags: [Auth]
- *     summary: Invite a new coach via email
- *     description: Admin invites a coach by email. The coach will receive an invitation email with a link to set their password and activate the account.
- *     security:
- *       - bearerAuth: []
- *     requestBody:
- *       required: true
- *       content:
- *         application/json:
- *           schema:
- *             type: object
- *             required: [full_name, email]
- *             properties:
- *               full_name:
- *                 type: string
- *                 example: "Nguyen Van A"
- *               email:
- *                 type: string
- *                 example: "coachA@example.com"
- *     responses:
- *       201:
- *         description: Invitation sent successfully
- *         content:
- *           application/json:
- *             schema:
- *               type: object
- *               properties:
- *                 message:
- *                   type: string
- *                   example: Invitation sent to coach
- *       409:
- *         description: Email already exists
- *         content:
- *           application/json:
- *             schema:
- *               type: object
- *               properties:
- *                 error:
- *                   type: string
- *                   example: Email already exists
- *       500:
- *         description: Failed to send invitation
- */
-router.post('/invite-coach', authenticateToken, isAdmin, authController.inviteCoach);
-
-/**
- * @swagger
- * /api/auth/coach-invite/confirm:
- *   post:
- *     tags: [Auth]
- *     summary: Confirm coach invitation and set password
- *     description: Coach uses the invitation link to set their password and activate their account.
- *     requestBody:
- *       required: true
- *       content:
- *         application/json:
- *           schema:
- *             type: object
- *             required: [token, password]
- *             properties:
- *               token:
- *                 type: string
- *                 example: "abc123invitetoken"
- *               password:
- *                 type: string
- *                 example: "newStrongPassword123"
- *     responses:
- *       200:
- *         description: Coach account activated
- *         content:
- *           application/json:
- *             schema:
- *               type: object
- *               properties:
- *                 message:
- *                   type: string
- *                   example: Coach account activated successfully
- *       400:
- *         description: Invalid or expired token
- *         content:
- *           application/json:
- *             schema:
- *               type: object
- *               properties:
- *                 error:
- *                   type: string
- *                   example: Invalid or expired token
- *       500:
- *         description: Failed to activate coach account
- */
-router.post('/coach-invite/confirm', authController.confirmCoachInvite);
 
 module.exports = router;
