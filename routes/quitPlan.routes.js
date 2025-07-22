@@ -32,7 +32,7 @@ const { isAdmin } = require('../middlewares/role.middleware');
  *             schema:
  *               type: array
  *               items:
- *                 $ref: '#/components/schemas/QuitPlan'
+ *                 $ref: '#/components/schemas/QuitPlans'
  *       500:
  *         description: Failed to fetch plans
  */
@@ -101,7 +101,7 @@ quitPlanRoutes.get(
  *                   type: string
  *                   example: Quit plan created successfully.
  *                 plan:
- *                   $ref: '#/components/schemas/QuitPlan'
+ *                   $ref: '#/components/schemas/QuitPlans'
  *                 stages:
  *                   type: array
  *                   items:
