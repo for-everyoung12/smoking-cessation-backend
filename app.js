@@ -105,6 +105,10 @@ app.use('/api', commentRoutes);
 const videoRoutes = require('./routes/video.routes');
 app.use('/api/video', videoRoutes);
 
+//Feedback routes
+const feedbackRoutes = require('./routes/feedback.routes');
+app.use('/api/feedback', feedbackRoutes);
+
 
 
 require('./models/user.model');
