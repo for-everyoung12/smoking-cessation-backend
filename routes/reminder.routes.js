@@ -41,8 +41,11 @@ const { checkMembershipPermission } = require('../middlewares/membership.middlew
  *                 example: false
  *               repeat_pattern:
  *                 type: string
- *                 enum: [daily, weekly]
+ *                 enum: [daily, weekly, monthly]
  *                 example: daily
+ *               plan_id:
+ *                 type: string
+ *                 example: "667f1967e0412324344ea835"
  *     responses:
  *       201:
  *         description: Reminder created successfully
@@ -104,5 +107,49 @@ router.get('/', authenticateToken, controller.getMyReminders);
  *         description: Lỗi server
  */
 router.delete('/:id', authenticateToken, controller.deleteReminder);
+
+/**
+ * @swagger
+ * /api/reminders/{id}:
+ *   put:
+ *     tags: [Reminder]
+ *     summary: Cập nhật reminder
+ *     security:
+ *       - bearerAuth: []
+ *     parameters:
+ *       - in: path
+ *         name: id
+ *         required: true
+ *         schema:
+ *           type: string
+ *         description: ID của reminder cần cập nhật
+ *     requestBody:
+ *       required: true
+ *       content:
+ *         application/json:
+ *           schema:
+ *             type: object
+ *             properties:
+ *               title:
+ *                 type: string
+ *               content:
+ *                 type: string
+ *               remind_at:
+ *                 type: string
+ *                 format: date-time
+ *               is_recurring:
+ *                 type: boolean
+ *               repeat_pattern:
+ *                 type: string
+ *                 enum: [daily, weekly, monthly]
+ *     responses:
+ *       200:
+ *         description: Reminder updated
+ *       404:
+ *         description: Reminder không tìm thấy
+ *       500:
+ *         description: Lỗi server
+ */
+router.put('/:id', authenticateToken, controller.updateReminder);
 
 module.exports = router;
