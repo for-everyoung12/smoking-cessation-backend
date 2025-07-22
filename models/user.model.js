@@ -9,12 +9,13 @@ const userSchema = new mongoose.Schema({
   gender: String,
   avatar:  String ,
   role: { type: String, enum: ['member', 'coach', 'admin'] },
+  specialization: String,  
+  experience: String, 
   created_at: { type: Date, default: Date.now },
   emailVerificationToken: String,
   isEmailVerified: { type: Boolean, default: false },
   resetPasswordToken: String,
   resetPasswordExpire: Date,
-
   max_users: {
     type: Number,
     default: 10,

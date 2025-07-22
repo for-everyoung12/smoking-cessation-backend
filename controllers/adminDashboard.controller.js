@@ -4,6 +4,7 @@ const BadgeAward = require('../models/badge.model');
 const ActivityLog = require('../models/activityLog.model');
 const Reminder = require("../models/reminder.model");
 
+
 exports.getAdminDashboardStats = async (req, res) => {
   try {
     const [userCount, membershipCount, coachCount, badgeCount] = await Promise.all([
@@ -97,3 +98,18 @@ exports.sendReminderToUsers = async (req, res) => {
     res.status(500).json({ message: "Gửi reminder thất bại" });
   }
 };
+
+
+exports.getAllCoaches = async (req, res) => {
+  try {
+    const coaches = await User.find({ role: 'coach' }).select(
+      'full_name email avatar current_users max_users created_at'
+    );
+    res.json(coaches);
+  } catch (error) {
+    console.error('[getAllCoaches]', error);
+    res.status(500).json({ message: 'Failed to fetch coaches' });
+  }
+};
+
+

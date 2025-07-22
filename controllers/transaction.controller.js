@@ -20,3 +20,12 @@ exports.getAllTransactions = async (req, res) => {
     res.status(500).json({ message: 'Không lấy được giao dịch toàn hệ thống' });
   }
 };
+exports.getTransactionSummary = async (req, res) => {
+  try {
+    const summary = await service.getAllTransactionSummary();
+    res.json(summary);
+  } catch (err) {
+    console.error('[Get Transaction Summary Error]', err);
+    res.status(500).json({ message: 'Không lấy được thống kê giao dịch' });
+  }
+};

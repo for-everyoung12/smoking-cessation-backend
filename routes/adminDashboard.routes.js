@@ -2,6 +2,7 @@ const express = require('express');
 const router = express.Router();
 const adminDashboardController = require('../controllers/adminDashboard.controller');
 const authenticateToken = require('../middlewares/auth.middleware');
+const { isAdmin } = require('../middlewares/role.middleware');
 
 /**
  * @swagger
@@ -58,6 +59,7 @@ const authenticateToken = require('../middlewares/auth.middleware');
 router.get(
   '/dashboard',
   authenticateToken,
+  isAdmin,
   adminDashboardController.getAdminDashboardStats
 );
 
@@ -104,6 +106,50 @@ router.get(
 router.post(
   "/reminders/send",
   authenticateToken,
+  isAdmin,
   adminDashboardController.sendReminderToUsers
 );
+
+
+/**
+ * @swagger
+ * /api/admin/coaches:
+ *   get:
+ *     tags: [AdminDashboard]
+ *     summary: Lấy danh sách tất cả coach
+ *     security:
+ *       - bearerAuth: []
+ *     responses:
+ *       200:
+ *         description: Trả về danh sách coach
+ *         content:
+ *           application/json:
+ *             schema:
+ *               type: array
+ *               items:
+ *                 type: object
+ *                 properties:
+ *                   _id:
+ *                     type: string
+ *                   full_name:
+ *                     type: string
+ *                   email:
+ *                     type: string
+ *                   avatar:
+ *                     type: string
+ *                   current_users:
+ *                     type: number
+ *                   max_users:
+ *                     type: number
+ *                   created_at:
+ *                     type: string
+ *                     format: date-time
+ */
+router.get(
+  "/coaches",
+  authenticateToken,
+  isAdmin,
+  adminDashboardController.getAllCoaches
+);
+
 module.exports = router;

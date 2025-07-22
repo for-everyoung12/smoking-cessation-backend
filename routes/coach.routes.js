@@ -3,7 +3,9 @@ const router = express.Router();
 const coachController = require('../controllers/coach.controller');
 const authenticateToken = require('../middlewares/auth.middleware');
 const { isAdmin } = require('../middlewares/role.middleware');
-
+const multer = require("multer");
+const { storage } = require("../utils/cloudinary");
+const upload = multer({ storage });
 /**
  * @swagger
  * tags:
@@ -16,16 +18,19 @@ const { isAdmin } = require('../middlewares/role.middleware');
  * /api/coaches:
  *   post:
  *     tags: [Coaches]
- *     summary: Create a new coach
+ *     summary: Tạo mới một coach (có thể upload avatar)
  *     security:
  *       - bearerAuth: []
  *     requestBody:
  *       required: true
  *       content:
- *         application/json:
+ *         multipart/form-data:
  *           schema:
  *             type: object
- *             required: [full_name, email, password]
+ *             required:
+ *               - full_name
+ *               - email
+ *               - password
  *             properties:
  *               full_name:
  *                 type: string
@@ -33,15 +38,28 @@ const { isAdmin } = require('../middlewares/role.middleware');
  *                 type: string
  *               password:
  *                 type: string
+ *               specialization:
+ *                 type: string
+ *               experience:
+ *                 type: string
+ *               birth_date:
+ *                 type: string
+ *                 format: date
+ *               gender:
+ *                 type: string
+ *                 enum: [male, female, other]
+ *               avatar:
+ *                 type: string
+ *                 format: binary
  *     responses:
  *       201:
- *         description: Coach created
+ *         description: Tạo coach thành công
  *       409:
- *         description: Email already exists
+ *         description: Email đã tồn tại
  *       500:
- *         description: Failed to create coach
+ *         description: Lỗi server
  */
-router.post('/', authenticateToken, isAdmin, coachController.createCoach);
+router.post('/', authenticateToken, isAdmin,upload.single("avatar"), coachController.createCoach);
 
 /**
  * @swagger
@@ -61,63 +79,103 @@ router.get('/', authenticateToken, coachController.getCoaches);
 
 /**
  * @swagger
- * /api/coaches/{coachId}:
+ * /api/coaches/{id}:
  *   patch:
  *     tags: [Coaches]
- *     summary: Update a coach
+ *     summary: Cập nhật thông tin coach (có thể upload avatar)
  *     security:
  *       - bearerAuth: []
  *     parameters:
  *       - in: path
- *         name: coachId
- *         required: true
+ *         name: id
  *         schema:
  *           type: string
+ *         required: true
+ *         description: ID của coach cần cập nhật
  *     requestBody:
- *       required: true
+ *       required: false
  *       content:
- *         application/json:
+ *         multipart/form-data:
  *           schema:
  *             type: object
  *             properties:
  *               full_name:
  *                 type: string
- *               email:
+ *               specialization:
  *                 type: string
- *               password:
+ *               experience:
  *                 type: string
+ *               birth_date:
+ *                 type: string
+ *                 format: date
+ *               gender:
+ *                 type: string
+ *                 enum: [male, female, other]
+ *               avatar:
+ *                 type: string
+ *                 format: binary
  *     responses:
  *       200:
- *         description: Coach updated
+ *         description: Cập nhật coach thành công
  *       404:
- *         description: Coach not found
+ *         description: Không tìm thấy coach
  *       500:
- *         description: Failed to update coach
+ *         description: Lỗi server
  */
-router.patch('/:coachId', authenticateToken, isAdmin, coachController.updateCoach);
+router.patch('/:id', authenticateToken, isAdmin,upload.single("avatar"), coachController.updateCoach);
 
 /**
  * @swagger
- * /api/coaches/{coachId}:
- *   delete:
+ * /api/coaches/{id}:
+ *   get:
  *     tags: [Coaches]
- *     summary: Delete a coach
+ *     summary: Lấy thông tin chi tiết một coach
  *     security:
  *       - bearerAuth: []
  *     parameters:
- *       - in: path
- *         name: coachId
+ *       - name: id
+ *         in: path
+ *         description: ID của coach
  *         required: true
  *         schema:
  *           type: string
  *     responses:
  *       200:
- *         description: Coach deleted
+ *         description: Thông tin coach
  *       404:
- *         description: Coach not found
+ *         description: Không tìm thấy coach
  *       500:
- *         description: Failed to delete coach
+ *         description: Lỗi server
  */
-router.delete('/:coachId', authenticateToken, isAdmin, coachController.deleteCoach);
+router.get(
+  "/:id",
+  authenticateToken,
+  coachController.getCoachById
+);
+
+/**
+ * @swagger
+ * /api/coaches/{id}:
+ *   delete:
+ *     tags: [Coaches]
+ *     summary: Xoá một coach
+ *     security:
+ *       - bearerAuth: []
+ *     parameters:
+ *       - in: path
+ *         name: id
+ *         required: true
+ *         schema:
+ *           type: string
+ *         description: ID của coach cần xoá
+ *     responses:
+ *       200:
+ *         description: Xoá thành công
+ *       404:
+ *         description: Không tìm thấy coach
+ *       500:
+ *         description: Lỗi server
+ */
+router.delete('/:id', authenticateToken, isAdmin, coachController.deleteCoach);
 
 module.exports = router;

@@ -162,27 +162,6 @@ router.get('/upcoming', authenticateToken, badgeController.getUpcomingBadges);
  */
 router.get('/summary', authenticateToken, badgeController.getBadgeSummary);
 
-/**
- * @swagger
- * /api/badges/{id}:
- *   get:
- *     summary: Lấy huy hiệu theo ID
- *     tags: [Badges]
- *     parameters:
- *       - in: path
- *         name: id
- *         schema:
- *           type: string
- *         required: true
- *         description: ID của huy hiệu
- *     responses:
- *       200:
- *         description: Trả về huy hiệu tương ứng
- *       404:
- *         description: Không tìm thấy huy hiệu
- */
-router.get("/:id", badgeController.getBadgeById);
-
 
 /**
  * @swagger
@@ -235,6 +214,26 @@ router.get("/:id", badgeController.getBadgeById);
  */
 router.post('/', authenticateToken, isAdmin, badgeController.createBadge);
 
+/**
+ * @swagger
+ * /api/badges/{id}:
+ *   get:
+ *     summary: Lấy huy hiệu theo ID
+ *     tags: [Badges]
+ *     parameters:
+ *       - in: path
+ *         name: id
+ *         schema:
+ *           type: string
+ *         required: true
+ *         description: ID của huy hiệu
+ *     responses:
+ *       200:
+ *         description: Trả về huy hiệu tương ứng
+ *       404:
+ *         description: Không tìm thấy huy hiệu
+ */
+router.get("/:id", badgeController.getBadgeById);
 /**
  * @swagger
  * /api/badges/{id}:
@@ -310,7 +309,7 @@ router.put('/:id', authenticateToken, isAdmin, badgeController.updateBadge);
  *       404:
  *         description: Không tìm thấy huy hiệu
  */
-router.delete('/:id', authenticateToken, badgeController.deleteBadge);
+router.delete('/:id', authenticateToken,isAdmin, badgeController.deleteBadge);
 
 
 
