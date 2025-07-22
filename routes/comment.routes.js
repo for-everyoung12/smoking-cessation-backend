@@ -45,6 +45,41 @@ router.post('/blogs/:id/comments', authenticateToken, commentController.createCo
 
 /**
  * @swagger
+ * /comments/{id}/reply:
+ *   post:
+ *     summary: Trả lời một bình luận
+ *     tags: [Comments]
+ *     security:
+ *       - bearerAuth: []
+ *     parameters:
+ *       - in: path
+ *         name: id
+ *         required: true
+ *         schema:
+ *           type: string
+ *         description: ID của bình luận cha
+ *     requestBody:
+ *       required: true
+ *       content:
+ *         application/json:
+ *           schema:
+ *             type: object
+ *             properties:
+ *               content:
+ *                 type: string
+ *                 example: Cảm ơn bạn nhé!
+ *     responses:
+ *       201:
+ *         description: Trả lời đã được tạo
+ *       400:
+ *         description: Thiếu nội dung
+ *       404:
+ *         description: Không tìm thấy bình luận cha
+ */
+router.post('/comments/:id/reply', authenticateToken, commentController.replyToComment);
+
+/**
+ * @swagger
  * /blogs/{id}/comments:
  *   get:
  *     summary: Lấy danh sách bình luận của blog
