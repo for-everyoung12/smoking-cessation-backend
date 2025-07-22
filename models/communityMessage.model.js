@@ -7,9 +7,11 @@ const communityMessageSchema = new mongoose.Schema({
   parent_post_id: { type: mongoose.Schema.Types.ObjectId, ref: 'CommunityMessage', default: null },
   type: {
     type: String,
-    enum: ['message', 'reply'],
+    enum: ['message', 'reply','badge'],/// thêm badge ở đây
     default: 'message'
   },
+    badge: { type: mongoose.Schema.Types.Mixed, default: null }// thêm dòng này
+
 });
 
 const communityMessage = mongoose.model('CommunityMessage', communityMessageSchema); 
