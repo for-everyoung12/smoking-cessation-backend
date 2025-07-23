@@ -4,11 +4,16 @@ const Feedback = require('../models/feedback.model');
 // Tạo feedback cho huấn luyện viên
 exports.feedbackCoach = async (req, res) => {
     try {
-        const { user_id, coach_user_id, rating, comment, is_deleted } = req.body;
+        // Lấy user_id từ token đã decode (req.user), KHÔNG lấy từ body
+        const userId = req.user?._id || req.user?.id;
+        const { coach_user_id, rating, comment, is_deleted } = req.body;
 
-        // Tạo phản hồi
+        if (!coach_user_id || !rating || !comment) {
+            return res.status(400).json({ error: 'Missing required fields!' });
+        }
+
         const feedback = new Feedback({
-            user_id,
+            user_id: userId,
             coach_user_id,
             rating,
             comment,
@@ -18,6 +23,9 @@ exports.feedbackCoach = async (req, res) => {
         });
 
         await feedback.save();
+
+        // Populate ngay khi trả về để FE render tức thì tên người gửi feedback
+        await feedback.populate('user_id', 'full_name avatar');
         res.status(201).json(feedback);
     } catch (err) {
         res.status(500).json({ error: err.message });
@@ -30,13 +38,12 @@ exports.getFeedbackForCoach = async (req, res) => {
         const feedbacks = await Feedback.find({
             coach_user_id: req.params.coach_user_id,
             is_deleted: false
-        }).populate('user_id', 'full_name avatar email'); 
+        }).populate('user_id', 'full_name avatar email');
         res.json(feedbacks);
     } catch (err) {
         res.status(500).json({ error: err.message });
     }
 };
-
 
 // Cập nhật feedback
 exports.updateFeedbackCoach = async (req, res) => {
@@ -45,7 +52,7 @@ exports.updateFeedbackCoach = async (req, res) => {
             req.params.feedback_id,
             req.body,
             { new: true }
-        );
+        ).populate('user_id', 'full_name avatar');
         if (!feedback) return res.status(404).json({ message: 'Feedback not found' });
         res.json(feedback);
     } catch (err) {
@@ -67,7 +74,7 @@ exports.deleteFeedbackCoach = async (req, res) => {
     }
 };
 
-// Lấy feedback của coach theo userId
+// Lấy feedback của coach theo userId (ai đã feedback coach này)
 exports.getCoachByUserId = async (req, res) => {
     try {
         const feedbacks = await Feedback.find({
@@ -79,4 +86,3 @@ exports.getCoachByUserId = async (req, res) => {
         res.status(500).json({ error: err.message });
     }
 };
-
