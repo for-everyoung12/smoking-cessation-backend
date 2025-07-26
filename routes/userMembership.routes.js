@@ -100,5 +100,48 @@ router.get('/', authenticateToken, isAdmin, controller.getAllMemberships);
  */
 router.get('/admin/:id', authenticateToken, isAdmin, controller.getMembershipByUserId);
 
+/**
+ * @swagger
+ * /api/user-membership/preview-upgrade:
+ *   post:
+ *     summary: Xem trước chi phí nâng cấp gói membership
+ *     tags: [UserMembership]
+ *     security:
+ *       - bearerAuth: []
+ *     requestBody:
+ *       required: true
+ *       content:
+ *         application/json:
+ *           schema:
+ *             type: object
+ *             properties:
+ *               newPackageId:
+ *                 type: string
+ *                 example: "60f73b2c4c1a4b35f89a1234"
+ *     responses:
+ *       200:
+ *         description: Thông tin chi phí nâng cấp
+ *         content:
+ *           application/json:
+ *             schema:
+ *               type: object
+ *               properties:
+ *                 from:
+ *                   type: string
+ *                 to:
+ *                   type: string
+ *                 remainingDays:
+ *                   type: number
+ *                 remainingValue:
+ *                   type: number
+ *                 upgradeCost:
+ *                   type: number
+ *                 totalCost:
+ *                   type: number
+ *       400:
+ *         description: Thiếu thông tin hoặc lỗi tính toán
+ */
+router.post('/preview-upgrade', authenticateToken, controller.previewUpgrade);
+
 
 module.exports = router;

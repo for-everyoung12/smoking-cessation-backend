@@ -45,3 +45,15 @@ exports.getMembershipByUserId = async (req, res) => {
     res.status(500).json({ message: 'Lỗi truy vấn membership' });
   }
 };
+
+exports.previewUpgrade = async (req, res) => {
+  try {
+    const { newPackageId } = req.body;
+    if (!newPackageId) return res.status(400).json({ message: 'Thiếu newPackageId' });
+
+    const result = await service.calculateUpgradeCost(req.user.id, newPackageId);
+    res.json(result);
+  } catch (err) {
+    res.status(400).json({ message: err.message });
+  }
+};
