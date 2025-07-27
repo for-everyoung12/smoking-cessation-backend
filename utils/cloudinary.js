@@ -9,6 +9,7 @@ cloudinary.config({
 
 // Storage cho user avatars
 const avatarStorage = new CloudinaryStorage({
+  ////sửa ở đây
   cloudinary,
   params: {
     folder: "user_avatars",
@@ -34,4 +35,5 @@ module.exports = {
   cloudinary,
   avatarStorage,
   blogImageStorage,
+  storage: avatarStorage, // thêm dòng này
 };
