@@ -21,51 +21,54 @@ exports.getStagesByPlan = async (req, res) => {
     const { utcStart, utcEnd } = getVNStartEndUTC();
 
     const enrichedStages = await Promise.all(
-      stages.map(async (stage) => {
-        const vnNow = new Date(new Date().toLocaleString("en-US", { timeZone: "Asia/Ho_Chi_Minh" }));
-        vnNow.setHours(0, 0, 0, 0);
+  stages.map(async (stage) => {
+    const vnNow = new Date(new Date().toLocaleString("en-US", { timeZone: "Asia/Ho_Chi_Minh" }));
+    vnNow.setHours(0, 0, 0, 0);
 
-        const start = new Date(stage.start_date);
-        const end = new Date(stage.end_date);
-        start.setHours(0, 0, 0, 0);
-        end.setHours(0, 0, 0, 0);
+    const start = new Date(stage.start_date);
+    const end = new Date(stage.end_date);
+    start.setHours(0, 0, 0, 0);
+    end.setHours(0, 0, 0, 0);
 
-        let status = "not_started";
-        if (end < vnNow) status = "completed";
-        else if (start <= vnNow && vnNow <= end) status = "in_progress";
+    let status = stage.status;
+    if (status !== "failed" && status !== "completed") {
+      if (end < vnNow) status = "completed";
+      else if (start <= vnNow && vnNow <= end) status = "in_progress";
+      else status = "not_started";
+    }
 
-        const progressDays = await ProgressTracking.countDocuments({
-          user_id: userId,
-          plan_id: planId,
-          stage_id: stage._id,
-        });
+    const progressDays = await ProgressTracking.countDocuments({
+      user_id: userId,
+      plan_id: planId,
+      stage_id: stage._id,
+    });
 
-        const totalDays = Math.floor((end - start) / (1000 * 60 * 60 * 24)) + 1;
+    const totalDays = Math.floor((end - start) / (1000 * 60 * 60 * 24)) + 1;
 
-        
-        let recordedToday = false;
-        if (status === "in_progress") {
-          const { utcStart, utcEnd } = getVNStartEndUTC();
+    let recordedToday = false;
+    if (status === "in_progress") {
+      const { utcStart, utcEnd } = getVNStartEndUTC();
 
-          const existing = await ProgressTracking.findOne({
-            user_id: userId,
-            plan_id: planId,
-            stage_id: stage._id,
-            date: { $gte: utcStart, $lt: utcEnd },
-          });
+      const existing = await ProgressTracking.findOne({
+        user_id: userId,
+        plan_id: planId,
+        stage_id: stage._id,
+        date: { $gte: utcStart, $lt: utcEnd },
+      });
 
-          recordedToday = !!existing;
-        }
+      recordedToday = !!existing;
+    }
 
-        return {
-          ...stage.toObject(),
-          status,
-          recordedToday,
-          progressDays,
-          totalDays,
-        };
-      })
-    );
+    return {
+      ...stage.toObject(),
+      status,
+      recordedToday,
+      progressDays,
+      totalDays,
+    };
+  })
+);
+
 
     res.status(200).json(enrichedStages);
   } catch (error) {

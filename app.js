@@ -104,8 +104,33 @@ const commentRoutes = require("./routes/comment.routes");
 app.use("/api", commentRoutes);
 
 // Video routes
-const videoRoutes = require("./routes/video.routes");
-app.use("/api/video", videoRoutes);
+const videoRoutes = require('./routes/video.routes');
+app.use('/api/video', videoRoutes);
+
+const quitGoalDraftRoutes = require('./routes/quitGoalDraft.routes');
+app.use('/api/quit-goal-draft', quitGoalDraftRoutes);
+
+require('./models/quitGoalDraft.model')
+require('./models/user.model');
+require('./models/quitPlan.model');
+require('./models/progressTracking.model');
+require('./models/quitStage.model');
+require('./models/membershipPackage.model');
+require('./models/payment.model');
+require('./models/transaction.model');
+require('./models/userMembership.model');
+require('./models/reminder.model');
+require('./models/blog.model');
+require('./models/notification.model');
+require('./models/smokingStatus.model');
+require('./models/feedback.model');
+require('./models/badge.model');
+require('./models/userBadge.model');
+require('./models/communityMessage.model');
+require('./models/chatSession.model');
+require('./models/coachUser.model');
+require('./models/coachMessage.model');
+require('./models/progressTracking.model');
 
 //Feedback routes
 const feedbackRoutes = require("./routes/feedback.routes");

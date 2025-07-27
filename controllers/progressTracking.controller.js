@@ -7,7 +7,6 @@ const { checkAndGrantBadges } = require('../utils/badgeHelper');
 exports.recordProgress = async (req, res) => {
   try {
     const { cigarette_count, note } = req.body;
-
     const now = new Date();
 
     const getVNStartEndUTC = () => {
@@ -51,20 +50,51 @@ exports.recordProgress = async (req, res) => {
       user_id: req.user.id,
       plan_id: req.params.planId,
       stage_id: req.params.stageId,
-      date: now, 
+      date: now,
       cigarette_count,
       note,
       money_spent: moneySpent,
     });
 
-
     const stage = await QuitStage.findById(req.params.stageId);
+
+    // ✅ NEW: check cigarette limit
+    if (stage.max_daily_cigarette !== null && cigarette_count > stage.max_daily_cigarette) {
+      const overLimitCount = await ProgressTracking.countDocuments({
+        user_id: req.user.id,
+        plan_id: req.params.planId,
+        stage_id: req.params.stageId,
+        cigarette_count: { $gt: stage.max_daily_cigarette }
+      });
+
+      if (overLimitCount >= 3) {
+        stage.status = 'failed';
+        await stage.save();
+        await QuitPlan.findByIdAndUpdate(req.params.planId, { status: 'cancelled' });
+
+        const updatedStage = await QuitStage.findById(req.params.stageId);
+
+        return res.status(200).json({
+          message: `You exceeded the cigarette limit (max ${stage.max_daily_cigarette}) 3 or more times. Stage failed and quit plan cancelled. Please create a new plan.`,
+          cancelled: true,
+          updatedStage,
+        });
+      } else {
+        return res.status(200).json({
+          message: `You exceeded today's cigarette limit of ${stage.max_daily_cigarette}. Continued violations may cancel your plan.`,
+          warning: true,
+          progress
+        });
+      }
+    }
+
     if (stage.status === "not_started") {
       stage.status = "in_progress";
       await stage.save();
     }
 
     const totalStageDays = Math.floor((new Date(stage.end_date) - new Date(stage.start_date)) / (1000 * 60 * 60 * 24)) + 1;
+
     const stageProgressCount = await ProgressTracking.countDocuments({
       user_id: req.user.id,
       plan_id: req.params.planId,
@@ -82,11 +112,15 @@ exports.recordProgress = async (req, res) => {
       await QuitPlan.findByIdAndUpdate(req.params.planId, { status: "completed" });
     }
 
+    
     const grantedBadges = await checkAndGrantBadges(req.user.id, req.params.planId);
+
+    const updatedStage = await QuitStage.findById(req.params.stageId); // always get latest version
 
     res.status(201).json({
       message: "Progress recorded",
       progress,
+      updatedStage,
       granted_badges: grantedBadges,
     });
 
@@ -95,6 +129,7 @@ exports.recordProgress = async (req, res) => {
     res.status(500).json({ message: "Failed to record progress" });
   }
 };
+
 
 
 
