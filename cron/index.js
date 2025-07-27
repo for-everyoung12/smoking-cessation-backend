@@ -1,5 +1,6 @@
 const cron = require("node-cron");
 const processReminders = require("./processReminders");
+const cleanupPendingPayments = require('./paymentCleaner');
 const { exec } = require("child_process");
 
 cron.schedule("0 * * * *", () => {
@@ -23,4 +24,9 @@ cron.schedule("0 2 * * *", () => {
     if (stderr) console.error(stderr);
     if (error) console.error("markSkippedStages error:", error.message);
   });
+});
+
+cron.schedule("*/10 * * * *", async () => {
+  console.log(`[CRON] Checking for stale PayPal payments @ ${new Date().toLocaleTimeString()}`);
+  await cleanupPendingPayments();
 });
