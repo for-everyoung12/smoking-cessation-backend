@@ -87,24 +87,29 @@ router.get('/paypal/return', (req, res) => {
 /**
  * @swagger
  * /api/payments/paypal/cancel:
- *   get:
- *     summary: Xử lý khi người dùng hủy thanh toán PayPals
+ *   post:
+ *     summary: Cập nhật trạng thái huỷ đơn PayPal
  *     tags: [PayPal]
- *     parameters:
- *       - in: query
- *         name: token
- *         schema:
- *           type: string
- *         description: Token từ PayPal
+ *     requestBody:
+ *       required: true
+ *       content:
+ *         application/json:
+ *           schema:
+ *             type: object
+ *             properties:
+ *               orderId:
+ *                 type: string
+ *                 description: PayPal Order ID (transaction_id)
+ *                 example: "5MN88288F8699084T"
  *     responses:
- *       302:
- *         description: Chuyển hướng về ứng dụng di động
+ *       200:
+ *         description: Huỷ thành công
+ *       404:
+ *         description: Không tìm thấy giao dịch
+ *       500:
+ *         description: Lỗi server
  */
-router.get('/paypal/cancel', (req, res) => {
-    const { token } = req.query;
-    // Chuyển hướng đến deep link của app
-    res.redirect(`quitsmokingapp://checkout/cancel?token=${token}`);
-});
+router.post('/paypal/cancel', controller.cancelPaypalOrder);
 
 
 

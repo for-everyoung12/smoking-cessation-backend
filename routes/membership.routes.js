@@ -27,18 +27,24 @@ const { isAdmin } = require('../middlewares/role.middleware');
  *             type: object
  *             required:
  *               - name
+ *               - type
  *               - duration_days
  *               - price
  *             properties:
  *               name:
+ *                 type: string
+ *                 example: "Pro 3 tháng"
+ *               type:
  *                 type: string
  *                 enum: [default, pro]
  *               description:
  *                 type: string
  *               duration_days:
  *                 type: integer
+ *                 example: 90
  *               price:
  *                 type: number
+ *                 example: 300000
  *               can_message_coach:
  *                 type: boolean
  *               can_assign_coach:
@@ -109,7 +115,29 @@ router.get('/:id', controller.getById);
  *       content:
  *         application/json:
  *           schema:
- *             $ref: '#/components/schemas/Membership'
+ *             type: object
+ *             properties:
+ *               name:
+ *                 type: string
+ *               type:
+ *                 type: string
+ *                 enum: [default, pro]
+ *               description:
+ *                 type: string
+ *               duration_days:
+ *                 type: integer
+ *               price:
+ *                 type: number
+ *               can_message_coach:
+ *                 type: boolean
+ *               can_assign_coach:
+ *                 type: boolean
+ *               can_use_quitplan:
+ *                 type: boolean
+ *               can_use_reminder:
+ *                 type: boolean
+ *               can_earn_special_badges:
+ *                 type: boolean
  *     responses:
  *       200:
  *         description: Cập nhật thành công
