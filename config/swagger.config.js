@@ -41,12 +41,9 @@ const options = {
     security: [{ bearerAuth: [] }],
     servers: [
       {
-        url: 'http://localhost:3000/',  
-        // url: 'https://smoking-cessation-backend.onrender.com/', 
-<<<<<<< HEAD
+        // url: 'http://localhost:3000/',  
+        url: 'https://smoking-cessation-backend.onrender.com/', 
       },
-=======
->>>>>>> 1cbf1e0587d366bdae011f829ee4f00de92c4d28
     ],
   },
   apis: ["./routes/*.js"],
