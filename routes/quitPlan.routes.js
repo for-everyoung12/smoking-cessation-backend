@@ -51,12 +51,16 @@ quitPlanRoutes.get(
  *     summary: Create a new quit plan with suggested stages
  *     description: |
  *       Creates a quit plan for the authenticated user.  
+ *       
+ *       ✅ The `goal` must be saved beforehand via `POST /api/quit-goal-draft`.  
+ *       The system will automatically retrieve the user's saved goal draft and use it as the plan's goal.  
+ *       
  *       If the user has recorded their smoking status beforehand (via `/api/smoking-status/pre-plan`),  
- *       the system will automatically suggest the number and type of stages based on:
+ *       the system will suggest a personalized quit plan including stage breakdown based on:
  *       - `cigarette_count`
  *       - `suction_frequency`
- *     
- *       Default stage fallback will be applied if no smoking data is found.
+ *       
+ *       A default fallback plan will be used if no smoking status is available.
  *     security:
  *       - bearerAuth: []
  *     requestBody:
@@ -66,29 +70,29 @@ quitPlanRoutes.get(
  *           schema:
  *             type: object
  *             required:
- *               - goal
  *               - start_date
  *             properties:
- *               goal:
- *                 type: string
- *                 example: "Quit smoking in 30 days"
  *               start_date:
  *                 type: string
  *                 format: date
- *                 example: "2025-07-20"
+ *                 example: "2025-07-25"
  *               note:
  *                 type: string
+ *                 example: "Starting during summer break."
  *               coach_user_id:
  *                 type: string
- *                 description: Optional coach ID (requires `can_assign_coach`)
+ *                 example: "64d3cfd13e92782f8e9d0412"
+ *                 description: Optional coach ID (requires plan permission)
  *               reasons:
  *                 type: array
  *                 items:
  *                   type: string
- *                 description: Main reasons user wants to quit
+ *                 example: ["For health", "To save money"]
+ *                 description: List of motivations for quitting
  *               reasons_detail:
  *                 type: string
- *                 description: Additional details about motivationx`
+ *                 example: "I want to save money for traveling to Japan."
+ *                 description: Optional additional detail about the user's motivation
  *     responses:
  *       201:
  *         description: Quit plan created successfully
@@ -106,14 +110,14 @@ quitPlanRoutes.get(
  *                   type: array
  *                   items:
  *                     $ref: '#/components/schemas/QuitStage'
+ *       400:
+ *         description: Invalid input (e.g. missing draft goal or bad date)
  *       403:
- *         description: User is not permitted to create quit plan
+ *         description: User is not permitted to create a quit plan
  *       409:
  *         description: User already has an active quit plan
- *       400:
- *         description: Invalid input (e.g., bad start date)
  *       500:
- *         description: Failed to create quit plan
+ *         description: Internal server error
  */
 quitPlanRoutes.post(
   '/',

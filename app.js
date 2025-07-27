@@ -105,8 +105,10 @@ app.use('/api', commentRoutes);
 const videoRoutes = require('./routes/video.routes');
 app.use('/api/video', videoRoutes);
 
+const quitGoalDraftRoutes = require('./routes/quitGoalDraft.routes');
+app.use('/api/quit-goal-draft', quitGoalDraftRoutes);
 
-
+require('./models/quitGoalDraft.model')
 require('./models/user.model');
 require('./models/quitPlan.model');
 require('./models/progressTracking.model');

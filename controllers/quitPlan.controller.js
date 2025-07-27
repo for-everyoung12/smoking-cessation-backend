@@ -4,9 +4,43 @@ const QuitStage = require('../models/quitStage.model');
 const ProgressTracking = require('../models/progressTracking.model');
 const SmokingStatus = require('../models/smokingStatus.model');
 const { sendNotification } = require('../utils/notify');
-const User = require('../models/user.model'); 
+const User = require('../models/user.model');
 const CoachUser = require("../models/coachUser.model");
-// Helper function to create default quit stages
+const QuitGoalDraft = require('../models/quitGoalDraft.model');
+
+function getStageDurations(cigarette_count, totalStages) {
+  let totalDuration;
+
+  if (cigarette_count <= 5) {
+    totalDuration = 14; // 2 stages, 7 days each
+  } else if (cigarette_count <= 15) {
+    totalDuration = Math.min(60, 30 + (cigarette_count - 5) * 2); // 30–50 days
+  } else {
+    totalDuration = Math.min(90, cigarette_count * 3);
+  }
+
+  const ratioByStageCount = {
+    2: [1, 1],             // cut down, quit
+    3: [2, 2, 3],          // cut down, quit, maintain
+    4: [2, 2, 2, 3],       // cut down, cut more, quit, maintain
+  };
+
+  const ratios = ratioByStageCount[totalStages] || Array(totalStages).fill(1);
+  const totalRatio = ratios.reduce((a, b) => a + b, 0);
+
+  let rawDurations = ratios.map(ratio => Math.floor((totalDuration * ratio) / totalRatio));
+  let allocated = rawDurations.reduce((a, b) => a + b, 0);
+  let remainder = totalDuration - allocated;
+
+  // Phân bổ phần dư (nếu có) cho các stage đầu
+  for (let i = 0; i < remainder; i++) {
+    rawDurations[i % totalStages]++;
+  }
+
+  return rawDurations;
+}
+
+
 function generateSuggestedStages(status) {
   const { cigarette_count = 0, suction_frequency = "medium" } = status;
   const stages = [];
@@ -15,149 +49,158 @@ function generateSuggestedStages(status) {
     stages.push({
       name: 'Reduce smoking',
       description:
-        'Next 7 days:\n' +
-        '- Cut down by 1–2 cigarettes per day\n' +
-        '- Avoid unnecessary smoking times\n' +
-        '- Replace smoking with drinking water, walking, or chewing gum',
-      status: 'not_started'
+        'Reduce 1–2 cigarettes per day:\n' +
+        '- Avoid smoking after meals or when stressed\n' +
+        '- Replace smoking with drinking water, chewing gum, or walking\n' +
+        '- Track the moments you feel the urge to smoke to increase awareness',
+      status: 'not_started',
+      max_daily_cigarette: cigarette_count - 1
     });
     stages.push({
       name: 'Complete cessation',
       description:
-        'Goal: Completely stop smoking this week\n' +
-        '- Do not smoke any cigarette at all\n' +
-        '- Handle cravings by deep breathing, journaling\n' +
-        '- Avoid environments that trigger smoking memories',
-      status: 'not_started'
+        'Quit completely:\n' +
+        '- Avoid all cigarettes\n' +
+        '- Remove cigarettes, lighters, and ashtrays from your environment\n' +
+        '- Journal your emotions when cravings hit\n' +
+        '- Practice meditation or deep breathing to stay calm',
+      status: 'not_started',
+      max_daily_cigarette: 0
     });
   } else if (cigarette_count <= 15 || suction_frequency === "medium") {
     stages.push({
       name: 'Cut down',
       description:
-        'This week:\n' +
-        '- Reduce your current intake by half (e.g., from 10 → 5 cigarettes)\n' +
-        '- Avoid smoking after meals or in the morning\n' +
-        '- Keep a log of when you smoke to identify habits',
-      status: 'not_started'
+        'Cut your intake by half:\n' +
+        '- Example: from 10 → 5 cigarettes/day\n' +
+        '- Avoid morning smokes or smoking while waiting\n' +
+        '- Log your smoking time and reasons to understand your habits\n' +
+        '- Apply the 5-minute delay rule before lighting a cigarette',
+      status: 'not_started',
+      max_daily_cigarette: Math.ceil(cigarette_count / 2)
     });
     stages.push({
       name: 'Quit smoking',
       description:
         'Start smoke-free phase:\n' +
-        '- Remove all cigarettes and lighters from your surroundings\n' +
-        '- Join activities that distract you (e.g., light exercise, meditation)\n' +
-        '- Write a journal to reflect on your feelings',
-      status: 'not_started'
+        '- Don’t smoke at all\n' +
+        '- Reward yourself for each smoke-free day\n' +
+        '- Use an app or tracker board to mark your progress\n' +
+        '- Talk to family or friends for emotional support',
+      status: 'not_started',
+      max_daily_cigarette: 2
     });
     stages.push({
       name: 'Maintain',
       description:
-        'Maintain smoke-free lifestyle:\n' +
-        '- Recognize and manage relapse triggers\n' +
-        '- Reinforce positive results (better sleep, breath, finances)\n' +
-        '- Reward yourself for progress',
-      status: 'not_started'
+        'Maintain a smoke-free lifestyle:\n' +
+        '- Avoid environments where others smoke (bars, parties)\n' +
+        '- Build new habits: exercise, reading, music\n' +
+        '- Recognize the benefits: better sleep, easier breathing, more savings\n' +
+        '- Remind yourself of your reasons to quit',
+      status: 'not_started',
+      max_daily_cigarette: 0
     });
   } else {
     stages.push({
       name: 'Step 1: Reduce',
       description:
         'Cut down to 70% of current intake:\n' +
-        '- E.g., from 20 → 14 cigarettes/day\n' +
-        '- Avoid smoking out of habit\n' +
-        '- Skip smoking after meals or during idle time',
-      status: 'not_started'
+        '- Example: from 20 → 14 cigarettes/day\n' +
+        '- Avoid smoking out of habit — smoke only with intention\n' +
+        '- Identify essential smoking moments\n' +
+        '- Write down your reasons for quitting',
+      status: 'not_started',
+      max_daily_cigarette: Math.round(cigarette_count * 0.7)
     });
     stages.push({
       name: 'Step 2: Further Reduce',
       description:
-        'Cut down to 30% of original amount:\n' +
-        '- E.g., from 14 → 5 cigarettes/day\n' +
-        '- Set specific rules: "no smoking at home", "no smoking after 6PM"\n' +
-        '- Track your feelings to monitor progress',
-      status: 'not_started'
+        'Reduce further to 30% of your original amount:\n' +
+        '- Example: from 14 → 5 cigarettes/day\n' +
+        '- Set personal rules: no smoking indoors or after 6PM\n' +
+        '- Keep a journal of your cravings and emotions\n' +
+        '- Use light exercise or 5-minute meditation as replacement',
+      status: 'not_started',
+      max_daily_cigarette: Math.round(cigarette_count * 0.3)
     });
     stages.push({
       name: 'Step 3: Quit',
       description:
-        'Begin full cessation:\n' +
-        '- Replace smoking rituals with positive activities\n' +
-        '- Keep a health journal\n' +
-        '- Consider joining a support group if needed',
-      status: 'not_started'
+        'Start complete cessation:\n' +
+        '- Discard all smoking-related items\n' +
+        '- Structure your day to avoid idle time\n' +
+        '- Share your progress with loved ones for encouragement\n' +
+        '- Document your milestones and achievements',
+      status: 'not_started',
+      max_daily_cigarette: 1
     });
     stages.push({
       name: 'Step 4: Sustain',
       description:
         'Stay smoke-free:\n' +
-        '- Avoid triggers like stress or parties\n' +
-        '- Give yourself small weekly rewards\n' +
-        '- Reflect on long-term health improvements',
-      status: 'not_started'
+        '- Avoid triggers: alcohol, social groups that smoke\n' +
+        '- Treat yourself weekly for staying smoke-free\n' +
+        '- Continue journaling or using tracking apps\n' +
+        '- Focus on long-term benefits: health, finances, family',
+      status: 'not_started',
+      max_daily_cigarette: 0
     });
   }
 
   return stages;
 }
 
-async function createSuggestedStages(planId, startDate, userId) {
-  const latestStatus = await SmokingStatus.findOne({
-    user_id: userId,
-    plan_id: null
-  }).sort({ createdAt: -1 });
-
+async function createSuggestedStages(planId, startDate, userId, customMaxValues = []) {
+  const latestStatus = await SmokingStatus.findOne({ user_id: userId, plan_id: null }).sort({ createdAt: -1 });
   const fallback = [
-    {
-      name: 'Reduce cigarette intake',
-      description: 'Gradually reduce number of cigarettes per day',
-      status: 'not_started'
-    },
-    {
-      name: 'Complete cessation',
-      description: 'Stop smoking completely',
-      status: 'not_started'
-    },
-    {
-      name: 'Maintain non-smoking',
-      description: 'Maintain smoke-free status',
-      status: 'not_started'
-    }
+    { name: 'Reduce intake', description: 'Gradually reduce', status: 'not_started', max_daily_cigarette: null },
+    { name: 'Stop smoking', description: 'Full cessation', status: 'not_started', max_daily_cigarette: 0 },
+    { name: 'Maintain', description: 'Maintain non-smoking', status: 'not_started', max_daily_cigarette: 0 }
   ];
 
   const stages = latestStatus ? generateSuggestedStages(latestStatus) : fallback;
-
   const start = new Date(startDate);
-  start.setHours(0, 0, 0, 0); // reset giờ về 00:00
+  start.setHours(0, 0, 0, 0);
+  const durations = getStageDurations(latestStatus?.cigarette_count || 0, stages.length);
 
-  return Promise.all(
+  let currentDate = new Date(start);
+ return Promise.all(
     stages.map((stage, index) => {
-      const stageStart = new Date(start);
-      stageStart.setDate(stageStart.getDate() + index * 7);
-      stageStart.setHours(0, 0, 0, 0); // bắt đầu từ 00:00 VN
-
+      const stageStart = new Date(currentDate);
       const stageEnd = new Date(stageStart);
-      stageEnd.setDate(stageEnd.getDate() + 6);
-      stageEnd.setHours(23, 59, 59, 999); // kết thúc vào cuối ngày
+      stageEnd.setDate(stageEnd.getDate() + durations[index] - 1);
+      currentDate = new Date(stageEnd);
+      currentDate.setDate(currentDate.getDate() + 1);
 
+      const customMax = customMaxValues[index];
       return QuitStage.create({
         plan_id: planId,
         name: stage.name,
         description: stage.description,
         status: stage.status,
         start_date: stageStart,
-        end_date: stageEnd
+        end_date: stageEnd,
+        max_daily_cigarette: customMax !== undefined ? Number(customMax) : stage.max_daily_cigarette
       });
     })
   );
 }
 
-// Main controller
+
 exports.createQuitPlan = async (req, res) => {
   try {
-    const { coach_user_id, goal, start_date, note, reasons, reasons_detail } = req.body;
+    const { start_date, note, reasons, reasons_detail, coach_user_id, custom_max_values = [] } = req.body;
 
 
-    // Kiểm tra membership
+
+   const draft = await QuitGoalDraft.findOne({ user_id: req.user.id });
+    if (!draft || !draft.goal?.trim()) {
+      return res.status(400).json({ message: 'Goal is missing or empty.' });
+    }
+    const goal = draft.goal;
+
+
     const membership = await UserMembership.findOne({
       user_id: req.user.id,
       status: 'active'
@@ -173,7 +216,6 @@ exports.createQuitPlan = async (req, res) => {
       return res.status(403).json({ message: 'Your membership does not allow coach assignment.' });
     }
 
-    // Kiểm tra kế hoạch đang tồn tại
     const existingPlan = await QuitPlan.findOne({
       user_id: req.user.id,
       status: { $in: ['ongoing', 'pending'] }
@@ -189,7 +231,7 @@ exports.createQuitPlan = async (req, res) => {
     }
     selectedDate.setHours(0, 0, 0, 0);
 
-    // Tạo kế hoạch
+
     const newPlan = await QuitPlan.create({
       user_id: req.user.id,
       coach_user_id: allowCoach ? coach_user_id : null,
@@ -197,44 +239,57 @@ exports.createQuitPlan = async (req, res) => {
       start_date: selectedDate,
       status: 'ongoing',
       note,
-      reasons: reasons || [],              
-      reasons_detail: reasons_detail || '' 
+      reasons: reasons || [],
+      reasons_detail: reasons_detail || ''
     });
 
-    // Nếu có gán coach → kiểm tra + tạo CoachUser
+
     if (allowCoach && coach_user_id) {
-      const coach = await User.findById(coach_user_id);
-      if (!coach || coach.role !== 'coach') {
-        return res.status(404).json({ message: 'Invalid coach selected' });
-      }
+  const coach = await User.findById(coach_user_id);
+  if (!coach || coach.role !== 'coach') {
+    return res.status(404).json({ message: 'Invalid coach selected' });
+  }
 
-      if (coach.current_users >= coach.max_users) {
-        return res.status(400).json({ message: 'Coach has reached maximum number of users' });
-      }
+  const exists = await CoachUser.findOne({
+    coach_id: coach_user_id,
+    user_id: req.user.id,
+  });
 
-      const exists = await CoachUser.findOne({ coach_id: coach_user_id, user_id: req.user.id });
-      if (!exists) {
-        await CoachUser.create({
-          coach_id: coach_user_id,
-          user_id: req.user.id,
-          status: 'active',
-          created_at: new Date()
-        });
-        coach.current_users += 1;
-        await coach.save();
-      }
-    }
+  const assignedCount = await CoachUser.countDocuments({ coach_id: coach_user_id });
 
-    // Tạo các stage
-    const createdStages = await createSuggestedStages(newPlan._id, selectedDate, req.user.id);
+  if (!exists && assignedCount >= coach.max_users) {
+    return res.status(400).json({ message: 'Coach has reached maximum number of users' });
+  }
 
-    // Gửi thông báo
+  if (!exists) {
+    await CoachUser.create({
+      coach_id: coach_user_id,
+      user_id: req.user.id,
+      status: 'active',
+      created_at: new Date()
+    });
+
+    // Optional — nếu bạn vẫn dùng current_users
+    // coach.current_users += 1;
+    // await coach.save();
+  }
+}
+
+
+
+    const createdStages = await createSuggestedStages(newPlan._id, selectedDate, req.user.id, custom_max_values);
+
+
+
     await sendNotification(
       req.user.id,
       "Quit plan created",
       `You have created a plan "${goal}" starting from ${selectedDate.toLocaleDateString('vi-VN')}`,
       "quitplan"
     );
+
+
+    await QuitGoalDraft.deleteOne({ user_id: req.user.id });
 
     return res.status(201).json({
       message: 'Quit plan created successfully.',
@@ -247,6 +302,7 @@ exports.createQuitPlan = async (req, res) => {
     return res.status(500).json({ message: 'Failed to create quit plan.' });
   }
 };
+
 
 
 exports.getUserQuitPlans = async (req, res) => {
@@ -370,12 +426,37 @@ exports.getSuggestedStages = async (req, res) => {
     }
 
     const stages = generateSuggestedStages(latestStatus);
-    res.json({ suggested_stages: stages });
+
+    // 🔧 Simulate stage timing
+    const today = new Date();
+    today.setHours(0, 0, 0, 0);
+
+    const durations = getStageDurations(latestStatus.cigarette_count || 0, stages.length);
+
+    let current = new Date(today);
+
+    const enrichedStages = stages.map((stage, index) => {
+      const start_date = new Date(current);
+      const end_date = new Date(start_date);
+      end_date.setDate(start_date.getDate() + durations[index] - 1);
+
+      current = new Date(end_date);
+      current.setDate(current.getDate() + 1);
+
+      return {
+        ...stage,
+        start_date,
+        end_date
+      };
+    });
+
+    res.json({ suggested_stages: enrichedStages });
   } catch (error) {
     console.error("[getSuggestedStages]", error);
     res.status(500).json({ message: "Failed to generate stage suggestions" });
   }
 };
+
 exports.getAllQuitPlans = async (req, res) => {
   try {
     const plans = await QuitPlan.find().populate('user_id', 'full_name email').populate('coach_user_id', 'full_name email');
