@@ -180,4 +180,45 @@ exports.getCoachUserById = async (req, res) => {
     res.status(500).json({ message: 'Failed to fetch relation detail' });
   }
 };
+exports.getCoachUserByUserId = async (req, res) => {
+  try {
+    const { userId } = req.params;
 
+    const relation = await CoachUser.findOne({ user_id: userId, status: 'active' })
+      .populate('coach_id', 'full_name email')
+      .populate('user_id', 'full_name email');
+
+    if (!relation) {
+      return res.status(404).json({ message: 'Relation not found' });
+    }
+
+    // Lấy quitPlans
+    const quitPlans = await QuitPlan.find({ user_id: userId });
+
+    // Lấy stages
+    const planIds = quitPlans.map(plan => plan._id);
+    const quitStages = await QuitStage.find({ plan_id: { $in: planIds } });
+
+    // Nhóm stage theo plan
+    const stageMap = {};
+    for (const stage of quitStages) {
+      const pid = stage.plan_id.toString();
+      if (!stageMap[pid]) stageMap[pid] = [];
+      stageMap[pid].push(stage);
+    }
+
+    // Gắn stage vào plan
+    const enrichedPlans = quitPlans.map(plan => ({
+      ...plan.toObject(),
+      stages: stageMap[plan._id.toString()] || [],
+    }));
+
+    res.json({
+      ...relation.toObject(),
+      quitPlans: enrichedPlans,
+    });
+  } catch (err) {
+    console.error('[getCoachUserByUserId]', err);
+    res.status(500).json({ message: 'Server error' });
+  }
+};

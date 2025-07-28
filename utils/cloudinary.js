@@ -7,7 +7,9 @@ cloudinary.config({
   api_secret: process.env.CLOUDINARY_API_SECRET,
 });
 
-const storage = new CloudinaryStorage({
+// Storage cho user avatars
+const avatarStorage = new CloudinaryStorage({
+  ////sửa ở đây
   cloudinary,
   params: {
     folder: "user_avatars",
@@ -15,4 +17,23 @@ const storage = new CloudinaryStorage({
   },
 });
 
-module.exports = { cloudinary, storage };
+// Storage cho blog images
+const blogImageStorage = new CloudinaryStorage({
+  cloudinary,
+  params: {
+    folder: "blog-images",
+    allowed_formats: ["jpg", "jpeg", "png", "gif", "webp"],
+    transformation: [
+      { width: 1000, height: 1000, crop: "limit" },
+      { quality: "auto" },
+      { fetch_format: "auto" },
+    ],
+  },
+});
+
+module.exports = {
+  cloudinary,
+  avatarStorage,
+  blogImageStorage,
+  storage: avatarStorage, // thêm dòng này
+};

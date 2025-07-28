@@ -20,7 +20,7 @@ exports.getAll = async (req, res) => {
 
 exports.getById = async (req, res) => {
   try {
-    const pkg = await service.getById(req.params.id);
+    const pkg = await service.getById(req.params.id); 
     if (!pkg) return res.status(404).json({ message: 'Không tìm thấy' });
     res.json(pkg);
   } catch (err) {

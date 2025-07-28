@@ -1,10 +1,11 @@
 const mongoose = require('mongoose');
 
 const membershipPackageSchema = new mongoose.Schema({
-  name: { type: String, enum: ['default', 'pro'], required: true },
+  name: { type: String, required: true },
+  type: { type: String, enum: ['default', 'pro'], required: true },
   description: String,
-  duration_days: Number,
-  price: Number,
+  duration_days: { type: Number, required: true },
+  price: { type: Number, required: true },
   can_message_coach: Boolean,
   can_assign_coach: Boolean,
   can_use_quitplan: Boolean,
