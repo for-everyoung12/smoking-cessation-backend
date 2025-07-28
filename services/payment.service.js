@@ -42,8 +42,8 @@ exports.createOrder = async (amount, currency = "USD", return_url, cancel_url) =
         },
       ],
       application_context: {
-        return_url: return_url || "http://localhost:5173/payment-success",
-        cancel_url:"http://localhost:5173/payment-cancel",
+        return_url: return_url || "https://smoking-cessation-fe.vercel.app/payment-success",
+        cancel_url:"https://smoking-cessation-fe.vercel.app/payment-cancel",
       },
     },
     {

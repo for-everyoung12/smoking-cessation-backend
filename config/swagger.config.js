@@ -43,7 +43,6 @@ const options = {
       {
         // url: 'http://localhost:3000/',  
         url: 'https://smoking-cessation-backend.onrender.com/', 
-        
       },
     ],
   },

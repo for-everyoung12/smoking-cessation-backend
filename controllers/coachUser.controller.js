@@ -180,8 +180,6 @@ exports.getCoachUserById = async (req, res) => {
     res.status(500).json({ message: 'Failed to fetch relation detail' });
   }
 };
-
-
 exports.getCoachUserByUserId = async (req, res) => {
   try {
     const { userId } = req.params;
@@ -224,4 +222,3 @@ exports.getCoachUserByUserId = async (req, res) => {
     res.status(500).json({ message: 'Server error' });
   }
 };
-

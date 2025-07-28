@@ -1,13 +1,14 @@
 // controllers/userMembership.controller.js
 const service = require('../services/userMembership.service');
 const UserMembership = require("../models/userMembership.model");
+
 exports.getCurrentMembership = async (req, res) => {
   try {
     const membership = await service.getCurrentMembership(req.user.id);
-    if (!membership) return res.status(404).json({ message: 'Không có membership đang hoạt động' });
+    if (!membership) return res.status(404).json({ message: 'No active membership found' });
     res.json(membership);
   } catch (err) {
-    res.status(500).json({ message: 'Lỗi truy vấn membership', error: err.message });
+    res.status(500).json({ message: 'Failed to fetch current membership', error: err.message });
   }
 };
 
@@ -16,7 +17,7 @@ exports.getMyMembershipHistory = async (req, res) => {
     const history = await service.getMembershipsByUser(req.user.id);
     res.json(history);
   } catch (err) {
-    res.status(500).json({ message: 'Lỗi truy vấn lịch sử membership' });
+    res.status(500).json({ message: 'Failed to fetch membership history' });
   }
 };
 
@@ -25,9 +26,10 @@ exports.getAllMemberships = async (req, res) => {
     const all = await service.getAllMemberships();
     res.json(all);
   } catch (err) {
-    res.status(500).json({ message: 'Lỗi truy vấn toàn bộ membership' });
+    res.status(500).json({ message: 'Failed to fetch all memberships' });
   }
 };
+
 exports.getMembershipByUserId = async (req, res) => {
   try {
     const membership = await UserMembership.findOne({
@@ -39,17 +41,17 @@ exports.getMembershipByUserId = async (req, res) => {
       ]
     }).populate('package_id');
 
-    if (!membership) return res.status(404).json({ message: 'Không có membership đang hoạt động' });
+    if (!membership) return res.status(404).json({ message: 'No active membership found' });
     res.json(membership);
   } catch (err) {
-    res.status(500).json({ message: 'Lỗi truy vấn membership' });
+    res.status(500).json({ message: 'Failed to fetch membership' });
   }
 };
 
 exports.previewUpgrade = async (req, res) => {
   try {
     const { newPackageId } = req.body;
-    if (!newPackageId) return res.status(400).json({ message: 'Thiếu newPackageId' });
+    if (!newPackageId) return res.status(400).json({ message: 'Missing newPackageId' });
 
     const result = await service.calculateUpgradeCost(req.user.id, newPackageId);
     res.json(result);

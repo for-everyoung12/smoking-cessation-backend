@@ -161,9 +161,7 @@ router.delete('/:id', authenticateToken, isCoach, coachUserController.deleteCoac
  *       500:
  *         description: Lỗi server
  */
-
 router.get('/:id', coachUserController.getCoachUserById);
-
 /**
  * @swagger
  * /api/coach-users/by-user/{userId}:
@@ -186,6 +184,4 @@ router.get('/:id', coachUserController.getCoachUserById);
  *         description: Lỗi server
  */
 router.get('/by-user/:userId', authenticateToken, coachUserController.getCoachUserByUserId);
-
-
 module.exports = router;
