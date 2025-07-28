@@ -78,6 +78,28 @@ exports.getStagesByPlan = async (req, res) => {
 };
 
 
+exports.getStageProgress = async (req, res) => {
+  try {
+    const userId = req.user.id;
+    const stageId = req.params.stageId;
+
+    const progress = await ProgressTracking.find({
+      user_id: userId,
+      stage_id: stageId
+    }).sort({ date: 1 });
+
+    const formatted = progress.map((p) => ({
+      date: p.date,
+      cigarette_count: p.cigarette_count
+    }));
+
+    res.status(200).json(formatted);
+  } catch (err) {
+    console.error('[getStageProgress]', err);
+    res.status(500).json({ message: 'Failed to fetch stage progress' });
+  }
+};
+
 exports.createStage = async (req, res) => {
   try {
     const { name, description, start_date, end_date, status } = req.body;

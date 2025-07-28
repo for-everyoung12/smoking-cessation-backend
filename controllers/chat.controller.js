@@ -7,30 +7,27 @@ const User = require("../models/user.model");
 exports.getOrCreateSession = async (req, res) => {
   try {
     const userId = req.user.id;
-    console.log("[DEBUG] User ID from token:", userId); // 👈 Log ID từ token
+    console.log("[DEBUG] User ID from token:", userId);
 
-    // 1. Tìm coach đang active với user
     const activeCoachRel = await CoachUser.findOne({
       user_id: userId,
       status: 'active'
     });
-    console.log("[DEBUG] Found coachUser:", activeCoachRel); // 👈 Log quan hệ coach-user
+    console.log("[DEBUG] Found coachUser:", activeCoachRel);
 
     if (!activeCoachRel) {
-      return res.status(404).json({ message: 'Bạn chưa có coach đang hoạt động.' });
+      return res.status(404).json({ message: 'No active coach assigned to you.' });
     }
 
     const coachId = activeCoachRel.coach_id;
-    console.log("[DEBUG] Coach ID:", coachId); // 👈 Log coachId
+    console.log("[DEBUG] Coach ID:", coachId);
 
-    // 2. Tìm session giữa user và coach này
     let session = await ChatSession.findOne({
       user_id: userId,
       coach_id: coachId
     }).populate('coach_id', 'full_name');
-    console.log("[DEBUG] Found existing session:", session); // 👈 Log session nếu có
+    console.log("[DEBUG] Found existing session:", session);
 
-    // 3. Nếu chưa có → tạo mới
     if (!session) {
       session = await ChatSession.create({
         user_id: userId,
@@ -39,18 +36,16 @@ exports.getOrCreateSession = async (req, res) => {
         status: 'open',
       });
 
-      // populate lại sau khi tạo
       await session.populate('coach_id', 'full_name');
-      console.log("[DEBUG] Created new session:", session); // 👈 Log session sau khi tạo
+      console.log("[DEBUG] Created new session:", session);
     }
 
     res.json({ data: session });
   } catch (err) {
     console.error('[getOrCreateSession]', err);
-    res.status(500).json({ message: 'Lỗi khi lấy phiên trò chuyện' });
+    res.status(500).json({ message: 'Failed to get or create chat session' });
   }
 };
-
 
 exports.getSessionsByCoach = async (req, res) => {
   try {
@@ -66,7 +61,7 @@ exports.getSessionsByCoach = async (req, res) => {
     res.status(200).json({ success: true, data: sessions });
   } catch (err) {
     console.error("[getSessionsByCoach]", err);
-    res.status(500).json({ success: false, message: "Không thể lấy danh sách session" });
+    res.status(500).json({ success: false, message: "Failed to retrieve chat sessions" });
   }
 };
 
@@ -75,14 +70,14 @@ exports.getMessages = async (req, res) => {
     const { sessionId } = req.params;
     const session = await ChatSession.findById(sessionId);
     if (!session) {
-      return res.status(404).json({ success: false, message: "Không tìm thấy session" });
+      return res.status(404).json({ success: false, message: "Chat session not found" });
     }
 
     if (
       session.user_id.toString() !== req.user.id &&
       session.coach_id.toString() !== req.user.id
     ) {
-      return res.status(403).json({ success: false, message: "Không có quyền truy cập" });
+      return res.status(403).json({ success: false, message: "Access denied" });
     }
 
     const messages = await CoachMessage.find({ session_id: sessionId })
@@ -92,7 +87,7 @@ exports.getMessages = async (req, res) => {
     res.status(200).json({ success: true, data: messages });
   } catch (err) {
     console.error("[getMessages]", err);
-    res.status(500).json({ success: false, message: "Không thể lấy tin nhắn" });
+    res.status(500).json({ success: false, message: "Failed to fetch messages" });
   }
 };
 
@@ -101,22 +96,22 @@ exports.closeSession = async (req, res) => {
     const { sessionId } = req.params;
     const session = await ChatSession.findById(sessionId);
     if (!session) {
-      return res.status(404).json({ success: false, message: "Không tìm thấy session" });
+      return res.status(404).json({ success: false, message: "Chat session not found" });
     }
 
     if (
       session.user_id.toString() !== req.user.id &&
       req.user.role !== "admin"
     ) {
-      return res.status(403).json({ success: false, message: "Không có quyền đóng session" });
+      return res.status(403).json({ success: false, message: "Permission denied to close session" });
     }
 
     session.status = "closed";
     await session.save();
 
-    res.status(200).json({ success: true, message: "Session đã được đóng" });
+    res.status(200).json({ success: true, message: "Chat session has been closed" });
   } catch (err) {
     console.error("[closeSession]", err);
-    res.status(500).json({ success: false, message: "Đóng session thất bại" });
+    res.status(500).json({ success: false, message: "Failed to close chat session" });
   }
 };

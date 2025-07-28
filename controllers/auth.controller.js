@@ -58,7 +58,7 @@ exports.register = async (req, res) => {
     await user.save();
 
 
-    const defaultPackage = await MembershipPackage.findOne({ name: 'default' });
+    const defaultPackage = await MembershipPackage.findOne({ type: 'default' });
     if (defaultPackage) {
       await UserMembership.create({
         user_id: user._id,

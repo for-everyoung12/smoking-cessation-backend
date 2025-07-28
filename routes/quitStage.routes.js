@@ -47,6 +47,45 @@ stageRouter.get(
 
 /**
  * @swagger
+ * /api/quit-plans/stage/{stageId}/progress:
+ *   get:
+ *     summary: Lấy dữ liệu ghi nhận tiến độ trong 1 stage
+ *     tags: [QuitStages]
+ *     security:
+ *       - bearerAuth: []
+ *     parameters:
+ *       - in: path
+ *         name: stageId
+ *         schema:
+ *           type: string
+ *         required: true
+ *         description: ID của giai đoạn cần lấy biểu đồ
+ *     responses:
+ *       200:
+ *         description: Danh sách ghi nhận theo ngày
+ *         content:
+ *           application/json:
+ *             schema:
+ *               type: array
+ *               items:
+ *                 type: object
+ *                 properties:
+ *                   date:
+ *                     type: string
+ *                     format: date-time
+ *                   cigarette_count:
+ *                     type: number
+ *       500:
+ *         description: Lỗi server
+ */
+stageRouter.get(
+  '/stage/:stageId/progress',
+  authenticateToken,
+  quitStageController.getStageProgress
+);
+
+/**
+ * @swagger
  * /api/quit-plans/{planId}/stages:
  *   post:
  *     summary: Tạo giai đoạn mới cho kế hoạch cai thuốc
