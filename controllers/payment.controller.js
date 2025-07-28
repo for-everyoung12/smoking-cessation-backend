@@ -143,7 +143,6 @@ exports.capturePaypalOrder = async (req, res) => {
       return res.status(404).json({ message: "Payment not found" });
     }
 
-    // ❗ FIX 1: Nếu đã tạo membership cho payment này rồi thì không tạo nữa
     const existingMembership = await UserMembership.findOne({
       payment_id: payment._id,
     });
@@ -155,7 +154,6 @@ exports.capturePaypalOrder = async (req, res) => {
       });
     }
 
-    // ❗ FIX 2: Chỉ expire những dòng còn hạn
     await UserMembership.updateMany(
       {
         user_id: userId,
