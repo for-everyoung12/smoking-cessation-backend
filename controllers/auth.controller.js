@@ -145,6 +145,7 @@ exports.loginWithGoogle = async (req, res) => {
     const { email, name, picture } = decodedToken;
 
     let user = await User.findOne({ email });
+
     if (!user) {
       user = await User.create({
         username: name.replace(/\s+/g, '').toLowerCase(),
@@ -154,6 +155,25 @@ exports.loginWithGoogle = async (req, res) => {
         role: 'member',
         isEmailVerified: true
       });
+
+      // 👉 Gán default membership cho user mới tạo
+      const defaultPackage = await MembershipPackage.findOne({ type: 'default' });
+      if (defaultPackage) {
+        const now = new Date();
+        const expireDate = defaultPackage.duration_days
+          ? new Date(now.getTime() + defaultPackage.duration_days * 24 * 60 * 60 * 1000)
+          : null;
+
+        await UserMembership.create({
+          user_id: user._id,
+          package_id: defaultPackage._id,
+          status: 'active',
+          payment_date: now,
+          expire_date: expireDate
+        });
+      } else {
+        console.warn('[Google Login] Default membership package not found');
+      }
     }
 
     const token = jwt.sign(
@@ -180,6 +200,7 @@ exports.loginWithGoogle = async (req, res) => {
     res.status(401).json({ error: 'Invalid Google token' });
   }
 };
+
 
 
 // FORGOT PASSWORD
